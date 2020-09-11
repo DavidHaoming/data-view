@@ -1,0 +1,107 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - feature/*
+      - develop
+      - master
+    tags:
+      - release-*
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: use node.js 8.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 8.x
+
+      - name: checkout submodules
+        env:
+          SIBBAY_CHECKOUT_SUBMODULE_SSH_PRIVATE_KEY: ${{secrets.SIBBAY_CHECKOUT_SUBMODULE_SSH_PRIVATE_KEY}}
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SIBBAY_CHECKOUT_SUBMODULE_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          git submodule sync --recursive
+          git -c protocol.version=2 submodule update --init --force --recursive --depth=1
+
+  deploy_test:
+    needs: [test]
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+      - uses: actions/checkout@v2
+    
+      - name: use node.js 8.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 8.x
+
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.6
+        
+      - name: frontend
+        env:
+          SIBBAY_FRONTEND_OSS_REGION: ${{secrets.TEST__SIBBAY_FRONTEND_OSS_REGION}}
+          SIBBAY_FRONTEND_OSS_ACCESS_KEY_ID: ${{secrets.TEST__SIBBAY_FRONTEND_OSS_ACCESS_KEY_ID}}
+          SIBBAY_FRONTEND_OSS_ACCESS_KEY_SECRET: ${{secrets.TEST__SIBBAY_FRONTEND_OSS_ACCESS_KEY_SECRET}}
+          SIBBAY_FRONTEND_OSS_BUCKET: ${{secrets.TEST__SIBBAY_FRONTEND_OSS_BUCKET}}
+
+          SIBBAY_BACKEND_API_URL: ${{secrets.TEST__SIBBAY_BACKEND_API_URL}}
+          SIBBAY_ALIYUN_RAM_OAUTH_APPID: ${{secrets.TEST__SIBBAY_ALIYUN_RAM_OAUTH_APPID}}
+          SIBBAY_ALIYUN_OAUTH_REDIRECT_URI: ${{secrets.TEST__SIBBAY_ALIYUN_OAUTH_REDIRECT_URI}}
+
+        run: |
+          envsubst < .github/config/test_template.js > src/const.js
+          cat src/const.js
+          npm install
+          npm run build
+          node deploy.js
+
+  deploy_stage:
+    needs: [test]
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - uses: actions/checkout@v2
+    
+      - name: use node.js 8.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 8.x
+
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.6
+        
+      - name: frontend
+        env:
+          SIBBAY_FRONTEND_OSS_REGION: ${{secrets.STAGE__SIBBAY_FRONTEND_OSS_REGION}}
+          SIBBAY_FRONTEND_OSS_ACCESS_KEY_ID: ${{secrets.STAGE__SIBBAY_FRONTEND_OSS_ACCESS_KEY_ID}}
+          SIBBAY_FRONTEND_OSS_ACCESS_KEY_SECRET: ${{secrets.STAGE__SIBBAY_FRONTEND_OSS_ACCESS_KEY_SECRET}}
+          SIBBAY_FRONTEND_OSS_BUCKET: ${{secrets.STAGE__SIBBAY_FRONTEND_OSS_BUCKET}}
+
+          SIBBAY_BACKEND_API_URL: ${{secrets.STAGE__SIBBAY_BACKEND_API_URL}}
+          SIBBAY_ALIYUN_RAM_OAUTH_APPID: ${{secrets.STAGE__SIBBAY_ALIYUN_RAM_OAUTH_APPID}}
+          SIBBAY_ALIYUN_OAUTH_REDIRECT_URI: ${{secrets.STAGE__SIBBAY_ALIYUN_OAUTH_REDIRECT_URI}}
+
+        run: |
+          envsubst < .github/config/stage_template.js > src/const.js
+          cat src/const.js
+          npm install
+          npm run build
+          node deploy.js

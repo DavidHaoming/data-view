@@ -30,9 +30,10 @@ const router = new VueRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  if (!to.matched.some(record => {
+  if (!to.matched.some(() => {
     // return record.meta.isPublic || process.env.NODE_ENV === 'development'
-    return record.meta.isPublic
+    // return record.meta.isPublic
+    return true // 先都打开
   })) { // 默认都需要登录权限, 除非 public 或者在开发环境
     if (!store.state.auth) { // 检查是否已登录
       if (store.state.token) { // 未登录，但是有token，获取用户信息

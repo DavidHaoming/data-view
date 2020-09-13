@@ -10,7 +10,7 @@ let accessKeySecret = process.env.SIBBAY_FRONTEND_OSS_ACCESS_KEY_SECRET
 let bucket = process.env.SIBBAY_FRONTEND_OSS_BUCKET
 
 
-let projectName = 'data-mark'
+let projectName = 'data-creation-view'
 let static_path = 'dist'
 
 if (region === undefined) {

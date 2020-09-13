@@ -46,12 +46,7 @@ jobs:
         with:
           node-version: 8.x
 
-      - name: Set up Python 3.6
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.6
-        
-      - name: frontend
+      - name: deploy
         env:
           SIBBAY_FRONTEND_OSS_REGION: ${{secrets.TEST__SIBBAY_FRONTEND_OSS_REGION}}
           SIBBAY_FRONTEND_OSS_ACCESS_KEY_ID: ${{secrets.TEST__SIBBAY_FRONTEND_OSS_ACCESS_KEY_ID}}
@@ -83,11 +78,6 @@ jobs:
         with:
           node-version: 8.x
 
-      - name: Set up Python 3.6
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.6
-        
       - name: frontend
         env:
           SIBBAY_FRONTEND_OSS_REGION: ${{secrets.STAGE__SIBBAY_FRONTEND_OSS_REGION}}

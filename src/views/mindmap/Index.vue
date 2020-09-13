@@ -102,7 +102,7 @@ export default {
                   border: '',
                 },
                 children: [],
-                text: '单选任务节点',
+                text: '单选任务',
                 icons: ['📩️🕑🌲️'],
                 id: 'single_task_choice'
               },
@@ -146,7 +146,7 @@ export default {
                   border: '',
                 },
                 children: [],
-                text: '语音文字输入',
+                text: '语音文字',
                 icons: ['✏'],
                 id: 'voice_text_input'
               },

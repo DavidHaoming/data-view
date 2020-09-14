@@ -103,7 +103,7 @@ export default {
                 },
                 children: [],
                 text: '单选任务',
-                icons: ['📩️🕑🌲️'],
+                icons: ['📩️', '🕑', '🌲️'],
                 id: 'single_task_choice'
               },
               {
@@ -115,7 +115,7 @@ export default {
                 children: [],
                 text: '多选节点',
                 icons: ['📨️'],
-                id: 'single_task_choice'
+                id: 'multi_choice'
               },
               {
                 style: {

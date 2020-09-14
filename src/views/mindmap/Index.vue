@@ -92,7 +92,7 @@ export default {
                 },
                 children: [],
                 text: '单选节点',
-                icons: ['📩️'],
+                icons: ['➊'],
                 id: 'single_choice'
               },
               {
@@ -103,7 +103,7 @@ export default {
                 },
                 children: [],
                 text: '单选任务',
-                icons: ['📩️', '🕑', '🌲️'],
+                icons: ['➊', '🕑', '🌲️'],
                 id: 'single_task_choice'
               },
               {
@@ -114,7 +114,7 @@ export default {
                 },
                 children: [],
                 text: '多选节点',
-                icons: ['📨️'],
+                icons: ['☑'],
                 id: 'multi_choice'
               },
               {
@@ -125,7 +125,7 @@ export default {
                 },
                 children: [],
                 text: '继续节点',
-                icons: ['💨️'],
+                icons: ['►'],
                 id: 'continue'
               },
               {
@@ -136,7 +136,7 @@ export default {
                 },
                 children: [],
                 text: '语音输入',
-                icons: ['🖊'],
+                icons: ['🔊'],
                 id: 'voice_input'
               },
               {
@@ -147,7 +147,7 @@ export default {
                 },
                 children: [],
                 text: '语音文字',
-                icons: ['✏'],
+                icons: ['📝'],
                 id: 'voice_text_input'
               },
               {
@@ -191,7 +191,7 @@ export default {
                 },
                 children: [],
                 text: '能量节点',
-                icons: ['🧧'],
+                icons: ['🔆'],
                 id: 'energy'
               }
             ],
@@ -234,7 +234,7 @@ export default {
               color: '#434b54',
               borderRadius: '6px'
             },
-            text: '业务节点(D)',
+            text: '代码节点(D)',
             id: 'code_design'
           },
           {

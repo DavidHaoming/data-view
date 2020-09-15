@@ -102,8 +102,8 @@ export default {
                   border: '',
                 },
                 children: [],
-                text: '单选任务',
-                icons: ['➊', '🕑', '🌲️'],
+                text: '动画单选',
+                icons: ['🔮'],
                 id: 'single_task_choice'
               },
               {
@@ -136,7 +136,7 @@ export default {
                 },
                 children: [],
                 text: '语音输入',
-                icons: ['🔊'],
+                icons: ['🔉'],
                 id: 'voice_input'
               },
               {
@@ -158,7 +158,7 @@ export default {
                 },
                 children: [],
                 text: '文字输入',
-                icons: ['🖌'],
+                icons: ['✏️'],
                 id: 'text_input'
               },
               {

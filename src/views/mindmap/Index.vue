@@ -258,13 +258,14 @@ export default {
       })
       this.ME.init()
       this.ME.bus.addListener('operation', op => {
+        console.log(op)
         if (op.name === "finishEdit") {
         //
         }
         if (op.name === "beginEdit") {
           this.editMindMap.node = E(op.obj.id)
         }
-        if (op.name === "inputKeypress" && op.obj.ctrlKey && op.obj.key === "/") {
+        if (op.name === "inputKeypress" && ((navigator.platform === 'Win32' || navigator.platform === "Windows") ? op.obj.ctrlKey : op.obj.metaKey) && op.obj.key === "/") {
           this.handleTextTarget()
         }
       })

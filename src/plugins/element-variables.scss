@@ -12,3 +12,4 @@ $--collapse-content-background-color: #F8F8FA;
 $--font-path: '~element-ui/lib/theme-chalk/fonts';
 
 @import "~element-ui/packages/theme-chalk/src/index";
+.el-form-item--mini.el-form-item {margin-bottom: 5px;}

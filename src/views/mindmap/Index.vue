@@ -517,7 +517,7 @@ export default {
     selectedNode(nodeObj) {
       if (nodeObj.root) return
       this.selectedMindMap.node = E(nodeObj.id)
-      this.selectedMindMap.obj = Object.assign(nodeObj)
+      this.selectedMindMap.obj = Object.assign({}, nodeObj)
       this.styleFormState = false
       if (nodeObj.style) {
         if (nodeObj.style.color) this.selectColor = nodeObj.style.color
@@ -537,6 +537,10 @@ export default {
           this.activeRightAside = 'code'
           this.asideCodeTabDisableState = false
           this.asideCode = this.htmlToCode(nodeObj.topic)
+        } else {
+          this.activeRightAside = 'style'
+          this.asideCodeTabDisableState = true
+          this.asideCode = ''
         }
       }
       this.templateClass = ''
@@ -668,7 +672,6 @@ export default {
     codeEditorChange(e) {
       if (!this.ME.currentNode) return
       let value = this.codeToHtml(e.getValue())
-      this.ME.currentNode.nodeObj.topic = value
       this.ME.setNodeTopic(E(this.ME.currentNode.nodeObj.id), value)
     },
     codeToHtml(code) {

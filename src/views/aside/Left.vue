@@ -155,6 +155,12 @@ export default {
     handlerNewDialogueSubmit() {
       this.$refs.newDialogueForm.validate((valid) => {
         if (valid) {
+          if (this.$route.query.org && this.$route.query.org !== '') {
+            this.newDialogue.ownerType = 'ORGANIZATION'
+            this.ownerId = this.$route.query.org
+          } else {
+            this.newDialogue.ownerType = 'USER'
+          }
           createDialogue({ownerId: this.ownerId, newDialogue: this.newDialogue}).then((res) => {
             console.log(this.newDialogue.type)
             this.$message.success(`${this.newDialogue.type === "FOLDER" ? "文件夹" : "对话"}创建成功`)

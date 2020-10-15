@@ -93,7 +93,7 @@
 <script>
 import MindElixir, {E} from "@/plugins/mind-elixir"
 import Editor from 'vue2x-ace-editor'
-import {updateDialogueContent} from "@/api/graphql/dialogue";
+import {getOneDialogue, updateDialogueContent} from "@/api/graphql/dialogue";
 
 export default {
   name: "MindMapIndex",
@@ -330,7 +330,8 @@ export default {
       templateClass: 'aside-template-disabled',
       styleFormState: true,
       keySelecting: {e: null, i: null},
-      asideCode: ''
+      asideCode: '',
+      isCancelUpdateDialogue: false
     }
   },
   mounted() {
@@ -348,6 +349,7 @@ export default {
     },
     $route(to, from) {
       if (to.query.id === from.query.id) return
+      if (!this.$refs.centerMindMap) return
       this.showCenterMindMap = false
       this.$refs.centerMindMap.$nextTick(() => {
         this.showCenterMindMap = true
@@ -356,16 +358,41 @@ export default {
     dialogueContent(val, old) {
       console.log({val, old})
       if (val === old) return
-      this.handlerUpdateDialogueContent(val)
+      this.handlerUpdateDialogueContent(val, old)
     }
   },
   methods: {
-    handlerUpdateDialogueContent(val) {
-      updateDialogueContent({id: this.id, dialogueContent: val}).then((res) => {
-        let content = res.data.updateDialogueContent.content
-        if (content !== val) this.$message.info("本地导图数据不一致")
-        else this.$message.success("导图更新成功")
+    handlerUpdateDialogueContent(val, old) {
+      if (this.isCancelUpdateDialogue === true) {
+        this.isCancelUpdateDialogue = false
+        return
+      }
+      getOneDialogue({id: this.id}).then((res) => {
+        const nowDialogue = res.data.getOneDialogue
+        if (nowDialogue.content !== old) {
+          this.$confirm('检测到云端内容已经更新，是否强制覆盖？', '确认信息', {
+            distinguishCancelAndClose: true,
+            confirmButtonText: '强制覆盖',
+            cancelButtonText: '拉取云端'
+          }).then(() => {
+            updateDialogueContent({id: this.id, dialogueContent: val}).then(() => {
+              this.$message.success("强制覆盖成功")
+            })
+          }).catch(() => {
+            this.isCancelUpdateDialogue = true
+            this.dialogueContent = nowDialogue.content
+            this.$message.success("拉取云端导图成功")
+            this.init()
+          })
+        } else {
+          updateDialogueContent({id: this.id, dialogueContent: val}).then(() => {
+            this.$message.success("导图更新成功")
+          })
+        }
+      }).catch(() => {
+        this.$message.error('获取对话出错')
       })
+
     },
     codeEditorInit: function () {
       require('brace/ext/language_tools') //language extension prerequsite...

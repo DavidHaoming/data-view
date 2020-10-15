@@ -52,9 +52,10 @@
           <el-input v-model="newBucket.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="归属" prop="ownerType">
-          <el-radio v-model="newBucket.ownerType" label="USER">个人</el-radio>
-          <el-radio v-model="newBucket.ownerType" :disabled="$store.state.organization.length === 0" label="ORGANIZATION">组织
-          </el-radio>
+          <el-radio-group v-model="newBucket.ownerType">
+            <el-radio label="USER">个人</el-radio>
+            <el-radio :disabled="$store.state.organization.length === 0" label="ORGANIZATION">组织</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="组织"
                       v-if="newBucket.ownerType === 'ORGANIZATION' && $store.state.organization">
@@ -92,8 +93,10 @@
           <el-input v-model="newDialogue.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="类型" prop="type">
-          <el-radio v-model="newDialogue.type" label="DIALOGUE">对话</el-radio>
-          <el-radio v-model="newDialogue.type" label="FOLDER">文件夹</el-radio>
+          <el-radio-group v-model="newDialogue.type">
+            <el-radio label="DIALOGUE">对话</el-radio>
+            <el-radio label="FOLDER">文件夹</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="目录" prop="folder">
           <el-tree
@@ -107,9 +110,10 @@
           </el-tree>
         </el-form-item>
         <el-form-item label="归属" prop="ownerType">
-          <el-radio v-model="newDialogue.ownerType" label="USER">个人</el-radio>
-          <el-radio v-model="newDialogue.ownerType" :disabled="$store.state.organization.length === 0" label="ORGANIZATION">组织
-          </el-radio>
+          <el-radio-group v-model="newDialogue.ownerType">
+            <el-radio label="USER">个人</el-radio>
+            <el-radio :disabled="$store.state.organization.length === 0" label="ORGANIZATION">组织</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="组织"
                       v-if="newDialogue.ownerType === 'ORGANIZATION' && $store.state.organization">
@@ -260,8 +264,9 @@ export default {
         if (valid) {
           createBucket({ownerId: this.ownerId, newBucket: this.newBucket}).then(() => {
             this.$message.success("桶创建成功")
+          }).finally(() => {
+            this.handlerNewBucketCancel()
           })
-          this.handlerNewBucketCancel()
         } else {
           this.$message.error("信息填写出错")
         }
@@ -278,8 +283,9 @@ export default {
         if (valid) {
           createOrganization({newOrg: this.newOrganization}).then(() => {
             this.$message.success("组织创建成功")
+          }).finally(() => {
+            this.handlerNewOrganizationCancel()
           })
-          this.handlerNewOrganizationCancel()
         } else {
           this.$message.error("信息填写出错")
         }
@@ -309,13 +315,15 @@ export default {
           }
           createDialogue({ownerId: this.ownerId, newDialogue: this.newDialogue}).then((res) => {
             this.$message.success(`${this.newDialogue.type === "FOLDER" ? "文件夹" : "对话"}创建成功`)
+            if (this.newDialogue.type === "FOLDER") return
             if (this.newDialogue.ownerType === 'USER') {
-              this.$router.push({name: 'Creation', query: {_: +new Date(), org: this.ownerId, id: res.data.createDialogue.id}})
+              this.$router.push({name: 'Creation', query: {_: +new Date(), id: res.data.createDialogue.id}})
             } else {
               this.$router.push({name: 'Creation', query: {_: +new Date(), org: this.ownerId, id: res.data.createDialogue.id}})
             }
+          }).finally(() => {
+            this.handlerNewDialogueCancel()
           })
-          this.handlerNewDialogueCancel()
         } else {
           this.$message.error("信息填写出错")
         }

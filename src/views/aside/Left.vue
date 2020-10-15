@@ -92,10 +92,7 @@ export default {
   watch: {
     $route(to, from) {
       if (to.query.org === from.query.org) return
-      this.showExplorerTree = false
-      this.$refs.explorerTree.$nextTick(() => {
-        this.showExplorerTree = true
-      })
+      this.resetExplorer()
     }
   },
   data() {
@@ -140,6 +137,12 @@ export default {
     }
   },
   methods: {
+    resetExplorer() {
+      this.showExplorerTree = false
+      this.$refs.explorerTree.$nextTick(() => {
+        this.showExplorerTree = true
+      })
+    },
     handlerNewDialogueCancel() {
       this.newDialogue = {
         name: "",
@@ -155,6 +158,7 @@ export default {
           createDialogue({ownerId: this.ownerId, newDialogue: this.newDialogue}).then((res) => {
             console.log(this.newDialogue.type)
             this.$message.success(`${this.newDialogue.type === "FOLDER" ? "文件夹" : "对话"}创建成功`)
+            this.resetExplorer()
             if (this.newDialogue.type === "FOLDER") return
             if (this.newDialogue.ownerType === 'USER') {
               this.$router.push({name: 'Creation', query: {_: +new Date(), id: res.data.createDialogue.id}})

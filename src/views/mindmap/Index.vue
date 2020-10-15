@@ -1,5 +1,5 @@
 <template>
-  <div class="center">
+  <div class="center" ref="centerMindMap" v-if="showCenterMindMap">
     <div class="center-main">
       <div id="mindmap"></div>
       <div v-if="textTarget" class="text-target"
@@ -88,21 +88,27 @@
       </el-tabs>
     </div>
   </div>
-
 </template>
 
 <script>
 import MindElixir, {E} from "@/plugins/mind-elixir"
 import Editor from 'vue2x-ace-editor'
+import {updateDialogueContent} from "@/api/graphql/dialogue";
 
 export default {
   name: "MindMapIndex",
   components: {
     editor: Editor
   },
+  props: {
+    initDialogueContent: String,
+    id: String
+  },
   data() {
     return {
       ME: null,
+      dialogueContent: this.initDialogueContent,
+      showCenterMindMap: true,
       textTarget: false,
       asideCodeTabDisableState: true,
       inputTextTarget: [],
@@ -339,9 +345,28 @@ export default {
       else this.$nextTick(() => {
         this.$refs.textTargetSelect.focus()
       })
+    },
+    $route(to, from) {
+      if (to.query.id === from.query.id) return
+      this.showCenterMindMap = false
+      this.$refs.centerMindMap.$nextTick(() => {
+        this.showCenterMindMap = true
+      })
+    },
+    dialogueContent(val, old) {
+      console.log({val, old})
+      if (val === old) return
+      this.handlerUpdateDialogueContent(val)
     }
   },
   methods: {
+    handlerUpdateDialogueContent(val) {
+      updateDialogueContent({id: this.id, dialogueContent: val}).then((res) => {
+        let content = res.data.updateDialogueContent.content
+        if (content !== val) this.$message.info("本地导图数据不一致")
+        else this.$message.success("导图更新成功")
+      })
+    },
     codeEditorInit: function () {
       require('brace/ext/language_tools') //language extension prerequsite...
       require('brace/mode/python')
@@ -349,12 +374,15 @@ export default {
       require('brace/snippets/python') //snippet
     },
     init() {
+      let data
+      if (!this.dialogueContent) data = MindElixir.new('新互动')
+      else data = JSON.parse(this.dialogueContent)
       this.ME = new MindElixir({
         el: '#mindmap',
         newTopicName: '子节点',
         direction: MindElixir.RIGHT,
         locale: 'cn',
-        data: MindElixir.new('新互动'),
+        data: data,
         draggable: true,
         editable: true,
         contextMenu: true,
@@ -370,6 +398,8 @@ export default {
       })
       this.ME.init()
       this.ME.bus.addListener('operation', op => {
+        this.dialogueContent = this.ME.getAllDataString()
+        localStorage.setItem(`dialogue-${this.id}`, this.dialogueContent)
         if (op.name === "finishEdit") {
           // update code
           if (this.ME.currentNode) {

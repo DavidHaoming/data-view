@@ -1,13 +1,14 @@
 <template>
   <div class="left-aside">
     <div class="sidebar collapsed-menu">
-      <div :class="'sidebar-button ' + (activeSidebarButton === 'step' ? 'selected' : '')">
-        <el-button type="text" @click="handleSidebarButton('step')">
-          <i class="el-icon-s-operation sidebar-icon"></i></el-button>
-      </div>
       <div :class="'sidebar-button ' + (activeSidebarButton === 'explorer' ? 'selected' : '')">
         <el-button type="text" @click="handleSidebarButton('explorer')">
           <i class="el-icon-folder-opened sidebar-icon"></i></el-button>
+      </div>
+
+      <div :class="'sidebar-button ' + (activeSidebarButton === 'step' ? 'selected' : '')">
+        <el-button type="text" @click="handleSidebarButton('step')">
+          <i class="el-icon-s-operation sidebar-icon"></i></el-button>
       </div>
     </div>
     <div class="left-menu">
@@ -27,14 +28,18 @@
             v-model="explorerSearch">
         </el-input>
         <el-tree
-            :data="data"
-            show-checkbox
+            @node-click="handleExplorerChange"
+            ref="explorerTree"
+            :props="explorerTreeProps"
+            :load="explorerTreeLoadNode"
+            :check-on-click-node="true"
+            :highlight-current="true"
+            lazy
             node-key="id"
-            class="explorer-tree"
-            default-expand-all
-            :expand-on-click-node="false">
+            v-if="showExplorerTree"
+            class="explorer-tree">
       <span class="custom-tree-node" slot-scope="{ node, data }">
-        <span>{{ node.label }}</span>
+        <span>{{ data.name }}</span>
         <span>
           <el-button
               type="text"
@@ -58,54 +63,39 @@
 </template>
 
 <script>
+import {getAllDialogue} from "@/api/graphql/dialogue";
+
 export default {
   name: "Left",
+  props: {
+    ownerId: String,
+    ownerType: String
+  },
+  watch: {
+    $route(to, from) {
+      if (to.query.org === from.query.org) return
+      this.showExplorerTree = false
+      this.$refs.explorerTree.$nextTick(() => {
+        this.showExplorerTree = true
+      })
+    }
+  },
   data() {
-    const data = [{
-      id: 1,
-      label: '一级 1',
-      children: [{
-        id: 4,
-        label: '二级 1-1',
-        children: [{
-          id: 9,
-          label: '三级 1-1-1'
-        }, {
-          id: 10,
-          label: '三级 1-1-2'
-        }]
-      }]
-    }, {
-      id: 2,
-      label: '一级 2',
-      children: [{
-        id: 5,
-        label: '二级 2-1'
-      }, {
-        id: 6,
-        label: '二级 2-2'
-      }]
-    }, {
-      id: 3,
-      label: '一级 3',
-      children: [{
-        id: 7,
-        label: '二级 3-1'
-      }, {
-        id: 8,
-        label: '二级 3-2'
-      }]
-    }]
     return {
-      activeSidebarButton: 'step',
+      activeSidebarButton: 'explorer',
       activeStep: '1',
       stepData: [
         {title: '步骤一', context: '<div>控制反馈：通过界面样式和交互动效让用户可以清晰的感知自己的操作；</div><div>页面反馈：操作后，通过页面元素的变化清晰地展现当前状态。</div>'},
         {title: '步骤二', context: '<div>简化流程：设计简洁直观的操作流程；</div>'},
         {title: '步骤三', context: '<div>简化流程：设计简洁直观的操作流程；</div>'},
       ],
-      data: JSON.parse(JSON.stringify(data)),
-      explorerSearch: ''
+      explorerTreeProps: {
+        label: 'name',
+        children: 'zones',
+        isLeaf: 'leaf'
+      },
+      explorerSearch: '',
+      showExplorerTree: true
     }
   },
   methods: {
@@ -117,7 +107,44 @@ export default {
     },
     handleSidebarButton(index) {
       this.activeSidebarButton = index
-    }
+    },
+    handleExplorerChange(node) {
+      console.log(node)
+      if (node.leaf === true) {
+        let query = Object.assign({}, this.$route.query, {_: +new Date()})
+        query.id = node.id
+        console.log(query)
+        this.$router.push({name: 'Creation', query: query})
+      }
+    },
+    explorerTreeLoadNode(node, resolve) {
+      if (node.level === 0) {
+        return resolve([{ name: '根目录', value: 'root' }]);
+      }
+      let nodes = []
+      getAllDialogue({
+        ownerType: this.ownerType,
+        parentPath: node.data.value,
+        ownerId: this.ownerId
+      }).then(
+          (resp) => {
+            nodes = resp.data.getAllDialogues.map(item => {
+              return {
+                value: `${item.parentPath}/${item.name}`,
+                name: item.name,
+                leaf: item.type !== "FOLDER",
+                id: item.id
+              }
+            })
+            console.log(nodes)
+          }
+      ).catch(() => {
+
+      }).finally(() => {
+        resolve(nodes)
+      })
+
+    },
   }
 }
 </script>

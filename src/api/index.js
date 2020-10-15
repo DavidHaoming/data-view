@@ -23,10 +23,7 @@ axios.interceptors.request.use(
 
 Vue.use(VueAxios, axios)
 
-export let getUserInfo = function () {
-    return axios.get('userinfo')
-}
 export let getLogin = function (code) {
-    return axios.get(`login?code=${code}`)
+    return axios.get(`user/login?code=${code}`)
 }
 

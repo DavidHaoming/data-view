@@ -2,7 +2,7 @@ import gql from 'graphql-tag'
 import apolloClient from "@/api/graphql/index"
 
 export let getUserInfo = function () {
-    return apolloClient.query({
+    return apolloClient().query({
         query: gql`query {
             getLoginUser {
                 id
@@ -17,7 +17,7 @@ export let getUserInfo = function () {
 }
 
 export let getUserAdminOrganization = function () {
-    return apolloClient.query({
+    return apolloClient().query({
         query: gql`query {
             getAllOrganizations {
                 id
@@ -35,7 +35,7 @@ export let getUserAdminOrganization = function () {
 }
 
 export let createOrganization = function (v) {
-    return apolloClient.mutate({
+    return apolloClient().mutate({
         mutation: gql`mutation ($newOrg: InputOrganization) {
             createOrganization(organization: $newOrg) {
                 id

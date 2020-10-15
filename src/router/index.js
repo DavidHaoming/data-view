@@ -11,7 +11,7 @@ const routes = [
   {
     path: '/',
     name: 'index',
-    redirect: '/home'
+    redirect: '/creation'
   },
   {
     name: 'login', path: '/login', component: Login, meta: {isPublic: true}
@@ -47,12 +47,13 @@ router.beforeEach(async (to, from, next) => {
               console.log("无组织")
             })
             next()
-          }).catch(() => {
+          }).catch((err) => {
+            console.log('get user info api err: ', err)
             store.commit('clearToken')
             next({ name: 'login', query: {from: to.path} })
           })
         } catch (err) {
-          console.log(err)
+          console.log('get user info run err: ', err)
           store.commit('clearToken')
           next({ name: 'login', query: {from: to.path} })
         }

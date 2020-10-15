@@ -44,7 +44,7 @@
           <el-button
               type="text"
               size="mini"
-              @click="() => append(data)">
+              @click="() => append(data)" v-if="!data.leaf">
             <i class="el-icon-circle-plus-outline"></i>
           </el-button>
           <el-button
@@ -58,12 +58,30 @@
         </el-tree>
       </div>
     </div>
+
+    <el-dialog :title="`新建对话 位置: ${newDialogue.parentPath}`" :visible.sync="dialogNewDialogueVisible" style="text-align: left">
+      <el-form label-position="left" :rules="newDialogueRules" ref="newDialogueForm" label-width="80px" :model="newDialogue">
+        <el-form-item label="名称" prop="name">
+          <el-input v-model="newDialogue.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="类型" prop="type">
+          <el-radio-group v-model="newDialogue.type">
+            <el-radio label="DIALOGUE">对话</el-radio>
+            <el-radio label="FOLDER">文件夹</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="handlerNewDialogueCancel">取 消</el-button>
+        <el-button type="primary" @click="handlerNewDialogueSubmit">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 
 </template>
 
 <script>
-import {getAllDialogue} from "@/api/graphql/dialogue";
+import {createDialogue, getAllDialogue} from "@/api/graphql/dialogue";
 
 export default {
   name: "Left",
@@ -82,7 +100,15 @@ export default {
   },
   data() {
     return {
+      dialogNewDialogueVisible: false,
+      newDialogue: {
+        name: "",
+        type: "DIALOGUE",
+        parentPath: "root",
+        ownerType: this.ownerType,
+      },
       activeSidebarButton: 'explorer',
+      nowDialoguePath: 'root',
       activeStep: '1',
       stepData: [
         {title: '步骤一', context: '<div>控制反馈：通过界面样式和交互动效让用户可以清晰的感知自己的操作；</div><div>页面反馈：操作后，通过页面元素的变化清晰地展现当前状态。</div>'},
@@ -95,12 +121,58 @@ export default {
         isLeaf: 'leaf'
       },
       explorerSearch: '',
-      showExplorerTree: true
+      showExplorerTree: true,
+      newDialogueRules: {
+        name: [
+          {required: true, message: '请输入对话名称', trigger: 'blur'},
+          {min: 2, max: 10, message: '长度在 2 至 10 个字符', trigger: 'blur'},
+        ],
+        type: [
+          {required: true, message: '请选择类型', trigger: 'change'}
+        ],
+        folder: [
+          {message: '请选择位置', trigger: 'blur'}
+        ],
+        ownerType: [
+          {required: true, message: '请选择所有者', trigger: 'change'}
+        ]
+      }
     }
   },
   methods: {
-    append() {
-
+    handlerNewDialogueCancel() {
+      this.newDialogue = {
+        name: "",
+        type: "DIALOGUE",
+        parentPath: "root",
+        ownerType: this.ownerType,
+      }
+      this.dialogNewDialogueVisible = false
+    },
+    handlerNewDialogueSubmit() {
+      this.$refs.newDialogueForm.validate((valid) => {
+        if (valid) {
+          createDialogue({ownerId: this.ownerId, newDialogue: this.newDialogue}).then((res) => {
+            console.log(this.newDialogue.type)
+            this.$message.success(`${this.newDialogue.type === "FOLDER" ? "文件夹" : "对话"}创建成功`)
+            if (this.newDialogue.type === "FOLDER") return
+            if (this.newDialogue.ownerType === 'USER') {
+              this.$router.push({name: 'Creation', query: {_: +new Date(), id: res.data.createDialogue.id}})
+            } else {
+              this.$router.push({name: 'Creation', query: {_: +new Date(), org: this.ownerId, id: res.data.createDialogue.id}})
+            }
+          }).finally(() => {
+            this.handlerNewDialogueCancel()
+          })
+        } else {
+          this.$message.error("信息填写出错")
+        }
+      })
+    },
+    append(data) {
+      console.log(data)
+      this.newDialogue.parentPath = data.value
+      this.dialogNewDialogueVisible = true
     },
     remove() {
 

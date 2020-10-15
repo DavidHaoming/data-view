@@ -48,7 +48,7 @@ export default {
   },
   methods: {
     initPage(r) {
-      if (r.query.org) {
+      if (r.query.org && r.query.org !== '') {
         this.creationType = 'ORGANIZATION'
         this.creationId = r.query.org
       } else {

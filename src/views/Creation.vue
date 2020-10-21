@@ -1,9 +1,9 @@
 <template>
   <el-row class="creation-main">
     <div class="left-aside">
-      <left :owner-id="creationId" :owner-type="creationType"></left>
+      <left></left>
     </div>
-    <mind-map-index v-if="dialogue.id !== ''" :id="dialogue.id" :init-dialogue-content="dialogue.content"></mind-map-index>
+    <mind-map-index></mind-map-index>
   </el-row>
 </template>
 
@@ -18,42 +18,15 @@ export default {
     Left,
     MindMapIndex
   },
-  watch: {
-    $route(to) {
-      this.initPage(to)
-    }
-  },
   data() {
     return {
-      creationType: 'USER',
-      creationId: '',
-      id: '',
-      dialogue: {
-        id: '',
-        createdAt: '',
-        updatedAt: '',
-        name: '',
-        owner: '',
-        ownerType: '',
-        recentlyAuthor: '',
-        type: '',
-        parentPath: '',
-        content: '',
-        history: []
-      }
     }
   },
   mounted() {
-    this.initPage(this.$route)
+    // this.initPage(this.$route)
   },
   methods: {
     initPage(r) {
-      if (r.query.org && r.query.org !== '') {
-        this.creationType = 'ORGANIZATION'
-        this.creationId = r.query.org
-      } else {
-        this.creationType = 'USER'
-      }
       this.id = r.query.id || ''
       if (this.id !== '') {
         getOneDialogue({id: this.id}).then((res) => {
@@ -62,6 +35,8 @@ export default {
         }).catch(() => {
           this.$message.error('获取对话出错')
         })
+      } else {
+        this.$message.info('请新建/打开一个对话')
       }
     }
   }

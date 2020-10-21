@@ -8,13 +8,13 @@
         class="search">
     </el-input>
     <el-menu
-        :default-active="'0'"
+        :default-active="defaultActiveMenu"
         mode="horizontal"
         class="menu"
         @select="handlerSelectMenu"
         background-color="#0088ff"
         text-color="#f2f2f2"
-        active-text-color="#f2f2f2">
+        active-text-color="#FFD04B">
       <el-submenu index="org" v-if="$store.state.organization.length > 0">
         <template slot="title">组织空间</template>
         <el-menu-item :index="org.id" v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>
@@ -47,7 +47,7 @@
 
     <!--新建桶-->
     <el-dialog title="新建桶" :visible.sync="dialogNewBucketVisible" style="text-align: left">
-      <el-form label-position="left" :rules="newBucketRules" ref="newBucketForm" label-width="80px" :model="newBucket">
+      <el-form @submit.native.prevent label-position="left" :rules="newBucketRules" ref="newBucketForm" label-width="80px" :model="newBucket">
         <el-form-item label="名称" prop="name">
           <el-input v-model="newBucket.name" autocomplete="off"></el-input>
         </el-form-item>
@@ -76,9 +76,9 @@
     </el-dialog>
     <!--新建组织-->
     <el-dialog title="新建组织" :visible.sync="dialogNewOrganizationVisible" style="text-align: left">
-      <el-form label-position="left" :rules="newOrganizationRules" ref="newOrganizationForm" label-width="80px" :model="newOrganization">
+      <el-form @submit.native.prevent label-position="left" :rules="newOrganizationRules" ref="newOrganizationForm" label-width="80px" :model="newOrganization">
         <el-form-item label="名称" prop="name">
-          <el-input v-model="newOrganization.name" autocomplete="off"></el-input>
+          <el-input @keyup.enter.native="handlerNewOrganizationSubmit" v-model="newOrganization.name" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -88,7 +88,7 @@
     </el-dialog>
     <!--新建对话-->
     <el-dialog title="新建对话" :visible.sync="dialogNewDialogueVisible" style="text-align: left">
-      <el-form label-position="left" :rules="newDialogueRules" ref="newDialogueForm" label-width="80px" :model="newDialogue">
+      <el-form @submit.native.prevent label-position="left" :rules="newDialogueRules" ref="newDialogueForm" label-width="80px" :model="newDialogue">
         <el-form-item label="名称" prop="name">
           <el-input v-model="newDialogue.name" autocomplete="off"></el-input>
         </el-form-item>
@@ -142,17 +142,20 @@ import {createDialogue, getAllDialogue} from "@/api/graphql/dialogue";
 
 export default {
   name: 'Header',
+  watch: {
+    $route(to) {
+      if (to.params.type === 'organization' && to.params.id) this.defaultActiveMenu = to.params.id
+      if (to.params.type === 'user') this.defaultActiveMenu = 'user'
+    }
+  },
   data() {
     return {
+      defaultActiveMenu: '',
       searchInput: '',
-      navList: [
-        {name: '组织空间'},
-        {name: '个人空间'},
-        {name: '模板广场'}
-      ],
       folderCurrentKey: "",
       newCreateChoiceData: [
-        {name: '互动', id: 'dialogue'}, {name: '桶', id: 'bucket'}, {name: '组织', id: 'organization'},
+        // {name: '互动', id: 'dialogue'}, {name: '桶', id: 'bucket'}, {name: '组织', id: 'organization'},
+        {name: '桶', id: 'bucket'}, {name: '组织', id: 'organization'},
       ],
       newBucket: {
         name: "",
@@ -317,9 +320,17 @@ export default {
             this.$message.success(`${this.newDialogue.type === "FOLDER" ? "文件夹" : "对话"}创建成功`)
             if (this.newDialogue.type === "FOLDER") return
             if (this.newDialogue.ownerType === 'USER') {
-              this.$router.push({name: 'Creation', query: {_: +new Date(), id: res.data.createDialogue.id}})
+              this.$router.push({
+                name: 'Creation',
+                query: {id: res.data.createDialogue.id, _: +new Date()},
+                params: {type: 'user'}
+              })
             } else {
-              this.$router.push({name: 'Creation', query: {_: +new Date(), org: this.ownerId, id: res.data.createDialogue.id}})
+              this.$router.push({
+                name: 'Creation',
+                query: {id: res.data.createDialogue.id, _: +new Date()},
+                params: {type: 'organization', id: this.ownerId}
+              })
             }
           }).finally(() => {
             this.handlerNewDialogueCancel()
@@ -332,10 +343,16 @@ export default {
     handlerSelectMenu(key, keyPath) {
       console.log(key, keyPath)
       if (keyPath.indexOf('org') !== -1) {
-        this.$router.push({name: 'Creation', query: {_: +new Date(), org: key}})
+        this.$router.push({
+          name: 'Creation',
+          query: {_: +new Date()},
+          params: {type: 'organization', id: key}
+        })
       }
       if (keyPath.indexOf('user') !== -1) {
-        this.$router.push({name: 'Creation', query: {_: +new Date()}})
+        this.$router.push({
+          name: 'Creation', query: {_: +new Date()}, params: {type: 'user'}
+        })
       }
     }
   }

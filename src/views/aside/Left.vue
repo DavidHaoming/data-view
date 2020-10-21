@@ -34,12 +34,18 @@
             :load="explorerTreeLoadNode"
             :check-on-click-node="true"
             :highlight-current="true"
+            :default-checked-keys="explorerCurrentKey"
+            :data="explorerData"
             lazy
             node-key="id"
             v-if="showExplorerTree"
             class="explorer-tree">
       <span class="custom-tree-node" slot-scope="{ node, data }">
-        <span>{{ data.name }}</span>
+        <span>
+          <i class="iconfont icon-wenjianjia" v-if="!data.leaf"></i>
+          <i class="iconfont icon-wenjian" v-if="data.leaf"></i>
+          {{ data.name }}
+        </span>
         <span>
           <el-button
               type="text"
@@ -60,9 +66,9 @@
     </div>
 
     <el-dialog :title="`新建对话 位置: ${newDialogue.parentPath}`" :visible.sync="dialogNewDialogueVisible" style="text-align: left">
-      <el-form label-position="left" :rules="newDialogueRules" ref="newDialogueForm" label-width="80px" :model="newDialogue">
+      <el-form @submit.native.prevent label-position="left" :rules="newDialogueRules" ref="newDialogueForm" label-width="80px" :model="newDialogue">
         <el-form-item label="名称" prop="name">
-          <el-input v-model="newDialogue.name" autocomplete="off"></el-input>
+          <el-input @keyup.enter.native="handlerEnterNewDialogueForm" v-model="newDialogue.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="类型" prop="type">
           <el-radio-group v-model="newDialogue.type">
@@ -85,24 +91,25 @@ import {createDialogue, getAllDialogue} from "@/api/graphql/dialogue";
 
 export default {
   name: "Left",
-  props: {
-    ownerId: String,
-    ownerType: String
-  },
   watch: {
     $route(to, from) {
-      if (to.query.org === from.query.org) return
+      this.handlerSetOwnerInfo(to)
+      if (to.params.type === from.params.type) return
       this.resetExplorer()
     }
   },
+  mounted() {
+    this.handlerSetOwnerInfo(this.$route)
+  },
   data() {
     return {
+      ownerId: '',
       dialogNewDialogueVisible: false,
       newDialogue: {
         name: "",
         type: "DIALOGUE",
         parentPath: "root",
-        ownerType: this.ownerType,
+        ownerType: "",
       },
       activeSidebarButton: 'explorer',
       nowDialoguePath: 'root',
@@ -117,6 +124,8 @@ export default {
         children: 'zones',
         isLeaf: 'leaf'
       },
+      explorerCurrentKey: [],
+      explorerData: [],
       explorerSearch: '',
       showExplorerTree: true,
       newDialogueRules: {
@@ -137,39 +146,50 @@ export default {
     }
   },
   methods: {
+    handlerSetOwnerInfo(r=this.$route) {
+      if (r.params.type === 'organization') this.newDialogue.ownerType = 'ORGANIZATION'
+      else if (r.params.type === 'user') this.newDialogue.ownerType = 'USER'
+      else console.error(`params type error ${r.params.type}`)
+      this.ownerId = r.params.id || ''
+    },
     resetExplorer() {
-      this.showExplorerTree = false
-      this.$refs.explorerTree.$nextTick(() => {
-        this.showExplorerTree = true
-      })
+      if (this.$refs.explorerTree) {
+        this.showExplorerTree = false
+        this.$refs.explorerTree.$nextTick(() => {
+          this.showExplorerTree = true
+        })
+      }
     },
     handlerNewDialogueCancel() {
       this.newDialogue = {
         name: "",
         type: "DIALOGUE",
         parentPath: "root",
-        ownerType: this.ownerType,
+        ownerType: this.newDialogue.ownerType,
       }
       this.dialogNewDialogueVisible = false
     },
     handlerNewDialogueSubmit() {
       this.$refs.newDialogueForm.validate((valid) => {
         if (valid) {
-          if (this.$route.query.org && this.$route.query.org !== '') {
-            this.newDialogue.ownerType = 'ORGANIZATION'
-            this.ownerId = this.$route.query.org
-          } else {
-            this.newDialogue.ownerType = 'USER'
-          }
+          this.handlerSetOwnerInfo()
           createDialogue({ownerId: this.ownerId, newDialogue: this.newDialogue}).then((res) => {
-            console.log(this.newDialogue.type)
             this.$message.success(`${this.newDialogue.type === "FOLDER" ? "文件夹" : "对话"}创建成功`)
+            console.log(this.explorerData)
             this.resetExplorer()
             if (this.newDialogue.type === "FOLDER") return
             if (this.newDialogue.ownerType === 'USER') {
-              this.$router.push({name: 'Creation', query: {_: +new Date(), id: res.data.createDialogue.id}})
+              this.$router.push({
+                name: 'Creation',
+                query: {id: res.data.createDialogue.id, _: +new Date()},
+                params: {type: 'user'}
+              })
             } else {
-              this.$router.push({name: 'Creation', query: {_: +new Date(), org: this.ownerId, id: res.data.createDialogue.id}})
+              this.$router.push({
+                name: 'Creation',
+                query: {id: res.data.createDialogue.id, _: +new Date()},
+                params: {type: 'organization', id: this.ownerId}
+              })
             }
           }).finally(() => {
             this.handlerNewDialogueCancel()
@@ -191,13 +211,18 @@ export default {
       this.activeSidebarButton = index
     },
     handleExplorerChange(node) {
-      console.log(node)
       if (node.leaf === true) {
-        let query = Object.assign({}, this.$route.query, {_: +new Date()})
+        let query = Object.assign({}, this.$route.query)
         query.id = node.id
+        query._ = +new Date()
         console.log(query)
-        this.$router.push({name: 'Creation', query: query})
+        this.$router.push({name: 'Creation', query: query, params: this.$route.params})
       }
+    },
+    handlerEnterNewDialogueForm(e) {
+      console.log(e)
+      e.preventDefault()
+      this.handlerNewDialogueSubmit()
     },
     explorerTreeLoadNode(node, resolve) {
       if (node.level === 0) {
@@ -205,7 +230,7 @@ export default {
       }
       let nodes = []
       getAllDialogue({
-        ownerType: this.ownerType,
+        ownerType: this.newDialogue.ownerType,
         parentPath: node.data.value,
         ownerId: this.ownerId
       }).then(
@@ -221,7 +246,7 @@ export default {
             console.log(nodes)
           }
       ).catch(() => {
-
+        this.$message.info('目录/文件为空, 请新建!')
       }).finally(() => {
         resolve(nodes)
       })
@@ -279,6 +304,9 @@ export default {
   padding-right: 8px;
 }
 
+.custom-tree-node i {
+  color: #0088FF;
+}
 
 .explorer-search {
   background: #F8F8FA;

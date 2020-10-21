@@ -21,7 +21,7 @@ const routes = [
     name: 'Home',
     component: () => import(/* webpackChunkName: "about" */ '../views/Home.vue')
   },
-  { path: '/creation', name: 'Creation', component: Creation},
+  { path: '/creation/:type/:id?', name: 'Creation', component: Creation},
 ]
 
 const router = new VueRouter({

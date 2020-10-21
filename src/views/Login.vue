@@ -56,7 +56,6 @@ export default {
 </script>
 
 <style scoped>
-@import "//at.alicdn.com/t/font_2015394_kwova1qnq1j.css";
 
 .login-button-col {
   display: flex;

@@ -100,14 +100,11 @@ export default {
   components: {
     editor: Editor
   },
-  props: {
-    initDialogueContent: String,
-    id: String
-  },
   data() {
     return {
       ME: null,
-      dialogueContent: this.initDialogueContent,
+      dialogueId: '',
+      dialogueContent: 'default',
       showCenterMindMap: true,
       textTarget: false,
       asideCodeTabDisableState: true,
@@ -331,7 +328,20 @@ export default {
       styleFormState: true,
       keySelecting: {e: null, i: null},
       asideCode: '',
-      isCancelUpdateDialogue: false
+      isCancelUpdateDialogue: true,
+      dialogue: {
+        id: '',
+        createdAt: '',
+        updatedAt: '',
+        name: '',
+        owner: '',
+        ownerType: '',
+        recentlyAuthor: '',
+        type: '',
+        parentPath: '',
+        content: '',
+        history: []
+      }
     }
   },
   mounted() {
@@ -347,13 +357,9 @@ export default {
         this.$refs.textTargetSelect.focus()
       })
     },
-    $route(to, from) {
-      if (to.query.id === from.query.id) return
-      if (!this.$refs.centerMindMap) return
-      this.showCenterMindMap = false
-      this.$refs.centerMindMap.$nextTick(() => {
-        this.showCenterMindMap = true
-      })
+    $route(to) {
+      this.isCancelUpdateDialogue = true
+      this.init(to)
     },
     dialogueContent(val, old) {
       console.log({val, old})
@@ -367,7 +373,7 @@ export default {
         this.isCancelUpdateDialogue = false
         return
       }
-      getOneDialogue({id: this.id}).then((res) => {
+      getOneDialogue({id: this.dialogueId}).then((res) => {
         const nowDialogue = res.data.getOneDialogue
         if (nowDialogue.content !== old) {
           this.$confirm('检测到云端内容已经更新，是否强制覆盖？', '确认信息', {
@@ -375,17 +381,18 @@ export default {
             confirmButtonText: '强制覆盖',
             cancelButtonText: '拉取云端'
           }).then(() => {
-            updateDialogueContent({id: this.id, dialogueContent: val}).then(() => {
+            updateDialogueContent({id: this.dialogueId, dialogueContent: val}).then(() => {
               this.$message.success("强制覆盖成功")
             })
-          }).catch(() => {
+          }).catch((err) => {
+            console.log(err)
             this.isCancelUpdateDialogue = true
             this.dialogueContent = nowDialogue.content
             this.$message.success("拉取云端导图成功")
             this.init()
           })
         } else {
-          updateDialogueContent({id: this.id, dialogueContent: val}).then(() => {
+          updateDialogueContent({id: this.dialogueId, dialogueContent: val}).then(() => {
             this.$message.success("导图更新成功")
           })
         }
@@ -400,7 +407,25 @@ export default {
       require('brace/theme/monokai')
       require('brace/snippets/python') //snippet
     },
-    init() {
+    handlerGetDialogue(r) {
+      this.dialogueId = r.query.id || ''
+      this.showCenterMindMap = true
+      if (this.dialogueId !== '') {
+        getOneDialogue({id: this.dialogueId}).then((res) => {
+          this.dialogue = res.data.getOneDialogue
+          this.dialogueContent = this.dialogue.content
+          this.handlerInitMindMap()
+          console.log(this.dialogue)
+        }).catch((err) => {
+          console.log(err)
+          this.$message.error('获取对话出错')
+        })
+      } else {
+        this.$message.info('请新建/打开一个对话')
+        this.showCenterMindMap = false
+      }
+    },
+    handlerInitMindMap() {
       let data
       if (!this.dialogueContent) data = MindElixir.new('新互动')
       else data = JSON.parse(this.dialogueContent)
@@ -425,8 +450,8 @@ export default {
       })
       this.ME.init()
       this.ME.bus.addListener('operation', op => {
-        this.dialogueContent = this.ME.getAllDataString()
-        localStorage.setItem(`dialogue-${this.id}`, this.dialogueContent)
+        this.dialogueContent = this.ME.getAllDataString() // 执行更新
+        localStorage.setItem(`dialogue-${this.dialogueId}`, this.dialogueContent)
         if (op.name === "finishEdit") {
           // update code
           if (this.ME.currentNode) {
@@ -465,6 +490,9 @@ export default {
       this.ME.bus.addListener('unselectNode', () => {
         this.unSelectedNode()
       })
+    },
+    init(r=this.$route) {
+      this.handlerGetDialogue(r)
     },
     handleTextTarget() {
       this.handleCursorLocation()
@@ -582,14 +610,6 @@ export default {
         if (nodeObj.style.fontSize) this.selectFontSize = nodeObj.style.fontSize
       }
       if (nodeObj.templateID) {
-        // let asideTemplate = document.getElementsByClassName('aside-template-node')
-        // for (const atkey in asideTemplate) {
-        //   let at = asideTemplate[atkey]
-        //   if (at.getAttribute('data-id') === nodeObj.templateID) {
-        //     at.className = 'aside-template-node aside-template-selected'
-        //     break
-        //   }
-        // }
         if (nodeObj.templateID === 'code_design') {
           this.activeRightAside = 'code'
           this.asideCodeTabDisableState = false
@@ -613,6 +633,7 @@ export default {
       this.activeRightAside = 'style'
       this.asideCodeTabDisableState = true
       this.asideCode = ''
+      this.dialogueContent = this.ME.getAllDataString() // 执行更新
     },
     getAllNodeTemplate(t, r, l = []) {
       for (const tElement of t) {
@@ -662,17 +683,6 @@ export default {
       if (!asideTemplate) return
       let templateID = this.ME.currentNode.nodeObj.templateID
       if (!templateID) templateID = 'normal'
-      // let findTemplate = '0'
-      // for (const atkey in asideTemplate) {
-      //   const at = asideTemplate[atkey]
-      //   console.log(at.className)
-      //   if (at.className && at.className.indexOf('aside-template-selected') !== -1) {
-      //     findTemplate = atkey
-      //     at.className = at.className.replace(/ aside-template-selected/g, '')
-      //     // console.log(at)
-      //     break
-      //   }
-      // }
       if (this.keySelecting.i === null) {
         for (const atkey in asideTemplate) {
           const at = asideTemplate[atkey]
@@ -715,6 +725,7 @@ export default {
         this.asideCodeTabDisableState = false
         this.asideCode = nodeObj.topic
       }
+      this.dialogueContent = this.ME.getAllDataString() // 执行更新
     },
     updateNodeTemplateByKey() {
       let nodeTemplate = this.findNodeTemplate(this.keySelecting.e.getAttribute('data-id'))
@@ -722,14 +733,17 @@ export default {
       nodeTemplate.templateID = nodeTemplate.id
       let nodeObj = this.ME.currentNode.nodeObj
       this.ME.updateNodeObjStyle(nodeObj, nodeTemplate)
+      nodeObj = this.ME.currentNode.nodeObj // 获取更新后的 obj
+      console.log(nodeObj, nodeTemplate)
       this.ME.updateNodeStyle(nodeObj)
       if (this.keySelecting.e) this.keySelecting.e.className = this.keySelecting.e.className.replace(/ aside-template-selected/g, '')
       this.keySelecting = {e: null, i: null}
+      this.dialogueContent = this.ME.getAllDataString() // 执行更新
     },
     codeEditorChange(e) {
       if (!this.ME.currentNode) return
       let value = this.codeToHtml(e.getValue())
-      this.ME.setNodeTopic(E(this.ME.currentNode.nodeObj.id), value)
+      if (value && value !== '') this.ME.setNodeTopic(E(this.ME.currentNode.nodeObj.id), value)
     },
     codeToHtml(code) {
       return code.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')

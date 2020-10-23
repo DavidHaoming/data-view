@@ -17,7 +17,8 @@ export default {
   data() {
     return {
       clientHeight: '',
-      from: ''
+      from: '',
+      a:''
     }
   },
   mounted() {

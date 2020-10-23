@@ -18,7 +18,8 @@ export default {
     return {
       clientHeight: '',
       a:'',
-      b:''
+      b:'',
+      c:''
     }
   },
   mounted() {

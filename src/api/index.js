@@ -1,7 +1,7 @@
 import axios from 'axios'
 import Vue from 'vue'
 import VueAxios from 'vue-axios'
-import {API_URL} from "@/const";
+import {ALIYUN_OAUTH_REDIRECT_URI, API_URL} from "@/const"
 import store from '@/store'
 
 axios.defaults.baseURL = `${API_URL}/api`
@@ -24,6 +24,6 @@ axios.interceptors.request.use(
 Vue.use(VueAxios, axios)
 
 export let getLogin = function (code) {
-    return axios.get(`user/login?code=${code}`)
+    return axios.get(`user/login?code=${code}&redirect_uri=${ALIYUN_OAUTH_REDIRECT_URI}`)
 }
 

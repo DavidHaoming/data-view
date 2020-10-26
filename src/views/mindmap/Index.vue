@@ -383,6 +383,7 @@ export default {
     },
     dialogueContent(val, old) {
       console.log({val, old})
+      console.log(val === old)
       if (val === old) return
       this.handlerUpdateDialogueContent(val, old)
     }
@@ -393,6 +394,7 @@ export default {
         this.isCancelUpdateDialogue = false
         return
       }
+      console.log('do update dialogue')
       getOneDialogue({id: this.dialogueId}).then((res) => {
         const nowDialogue = res.data.getOneDialogue
         if (nowDialogue.content !== old) {
@@ -621,12 +623,12 @@ export default {
     },
     selectedNode(nodeObj) {
       // 预览工具
+      console.log(624, nodeObj.children)
       this.previewToolLoading = true
       let previewData = undefined
       let errmsg = undefined
       if (this.cmdTemplateIDs.indexOf(nodeObj.templateID) === -1) {
-        previewData = Object.assign({}, nodeObj)
-        previewData = this.cleanNodeObjCircular(previewData)
+        previewData = this.deepCopyObj(nodeObj)
       } else {
         errmsg = '请点击非选项节点'
       }
@@ -635,7 +637,7 @@ export default {
 
       if (nodeObj.root) return
       this.selectedMindMap.node = E(nodeObj.id)
-      this.selectedMindMap.obj = Object.assign({}, nodeObj)
+      this.selectedMindMap.obj = this.deepCopyObj(nodeObj)
       this.styleFormState = false
       if (nodeObj.style) {
         if (nodeObj.style.color) this.selectColor = nodeObj.style.color
@@ -758,6 +760,8 @@ export default {
         this.asideCodeTabDisableState = false
         this.asideCode = nodeObj.topic
       }
+      console.log({now: this.ME.getAllDataString()})
+      console.log({now: nodeObj})
       this.dialogueContent = this.ME.getAllDataString() // 执行更新
     },
     updateNodeTemplateByKey() {
@@ -784,16 +788,13 @@ export default {
     htmlToCode(html) {
       return html.replace(/<br>/g, '\n').replace(/&nbsp;/g, ' ')
     },
-    cleanNodeObjCircular(nodeObj) {
-      // 去掉 parent, 防止死循环
-      let { topic, id, children, templateID } = nodeObj
-      nodeObj = { topic, id, children, templateID }
-      for (let i in nodeObj.children || []) {
-        if (nodeObj.children[i]) {
-          nodeObj.children[i] = this.cleanNodeObjCircular(nodeObj.children[i])
-        }
-      }
-      return nodeObj
+    deepCopyObj(data) {
+      return JSON.parse(JSON.stringify(data, (k, v) => {
+        if (k === 'parent') return undefined
+        if (k === 'from') return v.nodeObj.id
+        if (k === 'to') return v.nodeObj.id
+        return v
+      }))
     }
   }
 }

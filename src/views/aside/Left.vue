@@ -12,6 +12,7 @@
       </div>
     </div>
     <div class="left-menu">
+      <div v-if="hidePlay"> 
       <div v-if="activeSidebarButton === 'step'">
         <el-collapse v-model="activeStep" class="step-menu" accordion>
           <el-collapse-item style="text-align: unset" v-for="(item, index) of stepData" :key="index" :name="index"
@@ -35,6 +36,7 @@
             :check-on-click-node="true"
             :highlight-current="true"
             :default-checked-keys="explorerCurrentKey"
+            :default-expanded-keys="expandedList"
             :data="explorerData"
             lazy
             node-key="id"
@@ -82,6 +84,7 @@
         <el-button type="primary" @click="handlerNewDialogueSubmit">确 定</el-button>
       </div>
     </el-dialog>
+    </div>
   </div>
 
 </template>
@@ -91,11 +94,20 @@ import {createDialogue, getAllDialogue} from "@/api/graphql/dialogue";
 
 export default {
   name: "Left",
+  props: {
+    hideData: {
+      type: Number,
+      default: null
+    }
+  },
   watch: {
     $route(to, from) {
       this.handlerSetOwnerInfo(to)
       if (to.params.type === from.params.type) return
       this.resetExplorer()
+    },
+    hideData() {
+      this.hidePlay = false
     }
   },
   mounted() {
@@ -103,6 +115,8 @@ export default {
   },
   data() {
     return {
+      hidePlay: true,
+      expandedList:[],
       ownerId: '',
       dialogNewDialogueVisible: false,
       newDialogue: {
@@ -209,6 +223,8 @@ export default {
     },
     handleSidebarButton(index) {
       this.activeSidebarButton = index
+      this.hidePlay = true
+      this.$emit('onceData', true)
     },
     handleExplorerChange(node) {
       if (node.leaf === true) {
@@ -250,7 +266,6 @@ export default {
       }).finally(() => {
         resolve(nodes)
       })
-
     },
   }
 }
@@ -260,7 +275,6 @@ export default {
 .left-aside {
   display: flex;
 }
-
 .collapsed-menu {
   flex: 0 0 44px;
   width: 44px;

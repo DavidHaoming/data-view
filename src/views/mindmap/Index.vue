@@ -1,6 +1,6 @@
 <template>
   <div class="center" ref="centerMindMap" v-if="showCenterMindMap">
-    <div class="center-main">
+    <div class="center-main" @click="hideMenu">
       <div id="mindmap"></div>
       <div v-if="textTarget" class="text-target"
            :style="`top: ${cursor.y-25}px;left: ${cursor.x}px;`">
@@ -102,6 +102,7 @@ export default {
   },
   data() {
     return {
+      isHide: 1,
       ME: null,
       dialogueId: '',
       dialogueContent: 'default',
@@ -750,6 +751,10 @@ export default {
     },
     htmlToCode(html) {
       return html.replace(/<br>/g, '\n').replace(/&nbsp;/g, ' ')
+    },
+    // 隐藏菜单栏
+    hideMenu() {
+      this.$emit('hideMenu', this.isHide++,)
     }
   }
 }

@@ -1,4 +1,5 @@
 export const API_URL = "xxx" // 随环境不同
+export const PREVIEW_TOOL_URL = "xxx" // 预览工具地址
 export const ALIYUN_OAUTH_CLIENT_ID = "xxx" // 随环境不同
 export const ALIYUN_OAUTH_REDIRECT_URI = "xxx" // 前端登录地址, 随环境不同
 export const ALIYUN_OAUTH_RESPONSE_TYPE = "code"

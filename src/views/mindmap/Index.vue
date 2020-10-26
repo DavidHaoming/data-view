@@ -23,7 +23,7 @@
     <div class="right-aside">
       <el-tabs style="height: 100%;border: none;" v-model="activeRightAside" type="border-card" :stretch="true"
                @tab-click="handleClickRightAsideTab">
-        <el-tab-pane label="节点样式" name="style">
+        <el-tab-pane label="样式" name="style">
           <div style="padding: 15px;">
             <el-form :disabled="styleFormState" label-position="top" label-width="80px" size="mini">
               <el-form-item label="通用设置">
@@ -64,7 +64,7 @@
             </el-form>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="代码编辑" name="code" :disabled="asideCodeTabDisableState">
+        <el-tab-pane label="代码" name="code" :disabled="asideCodeTabDisableState">
           <editor
               height="100%"
               ref="codeEditor"
@@ -82,7 +82,20 @@
               @init="codeEditorInit">
           </editor>
         </el-tab-pane>
-        <el-tab-pane label="属性设置" name="attribute">
+        <el-tab-pane label="预览" name="preview">
+          <div style="padding: 15px;" v-loading="previewToolLoading">
+            <iframe
+                id="previewIframe"
+                name="previewIframe"
+                ref="previewIframe"
+                style="border: none;height: 800px;width: 270px"
+                :src="previewURL"
+            >
+              您当前的浏览器不支持页面上的功能，请升级您当前的浏览器版本或使用谷歌浏览器访问当前页面
+            </iframe>
+          </div>
+        </el-tab-pane>
+        <el-tab-pane label="属性" name="attribute">
           <div style="padding: 15px;"></div>
         </el-tab-pane>
       </el-tabs>
@@ -94,6 +107,7 @@
 import MindElixir, {E} from "@/plugins/mind-elixir"
 import Editor from 'vue2x-ace-editor'
 import {getOneDialogue, updateDialogueContent} from "@/api/graphql/dialogue";
+import {PREVIEW_TOOL_URL} from "@/const"
 
 export default {
   name: "MindMapIndex",
@@ -103,6 +117,8 @@ export default {
   data() {
     return {
       ME: null,
+      previewURL: PREVIEW_TOOL_URL + '/?mapload=local',
+      previewToolLoading: false,
       dialogueId: '',
       dialogueContent: 'default',
       showCenterMindMap: true,
@@ -299,6 +315,10 @@ export default {
           text: '步骤节点',
           id: 'bunch'
         }
+      ],
+      cmdTemplateIDs: [
+        'single_choice', 'single_task_choice', 'multi_choice', 'continue',
+        'voice_input', 'voice_text_input', 'text_input', 'delayed', 'wheel', 'energy'
       ],
       selectTemplate: '',
       selectColor: '#FFFFF8',
@@ -600,6 +620,19 @@ export default {
       console.log(tab, event)
     },
     selectedNode(nodeObj) {
+      // 预览工具
+      this.previewToolLoading = true
+      let previewData = undefined
+      let errmsg = undefined
+      if (this.cmdTemplateIDs.indexOf(nodeObj.templateID) === -1) {
+        previewData = Object.assign({}, nodeObj)
+        previewData = this.cleanNodeObjCircular(previewData)
+      } else {
+        errmsg = '请点击非选项节点'
+      }
+      this.$refs.previewIframe.contentWindow.postMessage({previewData, errmsg}, '*')
+      this.previewToolLoading = false
+
       if (nodeObj.root) return
       this.selectedMindMap.node = E(nodeObj.id)
       this.selectedMindMap.obj = Object.assign({}, nodeObj)
@@ -615,7 +648,7 @@ export default {
           this.asideCodeTabDisableState = false
           this.asideCode = this.htmlToCode(nodeObj.topic)
         } else {
-          this.activeRightAside = 'style'
+          if (this.activeRightAside === 'code') this.activeRightAside = 'style'
           this.asideCodeTabDisableState = true
           this.asideCode = ''
         }
@@ -630,7 +663,7 @@ export default {
       this.selectBackground = '#FFFFFF'
       this.selectFontSize = '15'
       if (this.selectTemplate) this.selectTemplate.className = this.selectTemplate.className.replace(/ aside-template-selected/g, '')
-      this.activeRightAside = 'style'
+      if (this.activeRightAside === 'code') this.activeRightAside = 'style'
       this.asideCodeTabDisableState = true
       this.asideCode = ''
       this.dialogueContent = this.ME.getAllDataString() // 执行更新
@@ -750,6 +783,17 @@ export default {
     },
     htmlToCode(html) {
       return html.replace(/<br>/g, '\n').replace(/&nbsp;/g, ' ')
+    },
+    cleanNodeObjCircular(nodeObj) {
+      // 去掉 parent, 防止死循环
+      let { topic, id, children, templateID } = nodeObj
+      nodeObj = { topic, id, children, templateID }
+      for (let i in nodeObj.children || []) {
+        if (nodeObj.children[i]) {
+          nodeObj.children[i] = this.cleanNodeObjCircular(nodeObj.children[i])
+        }
+      }
+      return nodeObj
     }
   }
 }

@@ -1,4 +1,5 @@
 export const API_URL = "$SIBBAY_BACKEND_API_URL"
+export const PREVIEW_TOOL_URL = "http://mritools.sibbay.ai/v2"
 export const ALIYUN_OAUTH_CLIENT_ID = "$SIBBAY_ALIYUN_RAM_OAUTH_APPID"
 export const ALIYUN_OAUTH_REDIRECT_URI = "$SIBBAY_ALIYUN_OAUTH_REDIRECT_URI"
 export const ALIYUN_OAUTH_RESPONSE_TYPE = "code"

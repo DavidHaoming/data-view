@@ -1,36 +1,55 @@
 <template>
   <div class="nav">
-    <div class="title">Sibbay 互动创作平台</div>
+<!--    <div class="title">Sibbay 互动创作平台</div>-->
+    <div class="title">
+     <el-menu 
+         :default-active="activeIndex"
+         class="el-menu-demo"
+         background-color="#0088ff"
+         text-color="#ffffff"
+         mode="horizontal"
+         active-text-color="#FFD04B"
+         @select="handlerSelectMenu">
+       <el-submenu index="2">
+         <template slot="title">{{activeIndex}}</template>
+         <template v-if="$store.state.organization.length > 0">
+         <el-menu-item :index="org.name" v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>
+         </template>
+         <el-menu-item index="个人中心">个人空间</el-menu-item>
+         <el-menu-item v-for="item of newCreateChoiceData" :key="item.name" :index="item.name" @click="handlerNewCommand(item.id)" >{{item.name}}</el-menu-item>
+       </el-submenu>
+     </el-menu>
+    </div>
     <el-input
         prefix-icon="el-icon-search"
         size="small"
         v-model="searchInput"
         class="search">
     </el-input>
-    <el-menu
-        :default-active="defaultActiveMenu"
-        mode="horizontal"
-        class="menu"
-        @select="handlerSelectMenu"
-        background-color="#0088ff"
-        text-color="#f2f2f2"
-        active-text-color="#FFD04B">
-      <el-submenu index="org" v-if="$store.state.organization.length > 0">
-        <template slot="title">组织空间</template>
-        <el-menu-item :index="org.id" v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>
-      </el-submenu>
-      <el-menu-item index="user">个人空间</el-menu-item>
-      <el-menu-item index="template">模板广场</el-menu-item>
-    </el-menu>
+<!--    <el-menu-->
+<!--        :default-active="defaultActiveMenu"-->
+<!--        mode="horizontal"-->
+<!--        class="menu"-->
+<!--        @select="handlerSelectMenu"-->
+<!--        background-color="#0088ff"-->
+<!--        text-color="#f2f2f2"-->
+<!--        active-text-color="#FFD04B">-->
+<!--      <el-submenu index="org" v-if="$store.state.organization.length > 0">-->
+<!--        <template slot="title">组织空间</template>-->
+<!--        <el-menu-item :index="org.id" v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>-->
+<!--      </el-submenu>-->
+<!--      <el-menu-item index="user">个人空间</el-menu-item>-->
+<!--      <el-menu-item index="template">模板广场</el-menu-item>-->
+<!--    </el-menu>-->
     <div class="dropMenu">
-      <el-dropdown @command="handlerNewCommand">
-        <span style="cursor: pointer;"><i style="color: #f2f2f2" class="el-icon-circle-plus el-icon--right"></i></span>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item v-for="item of newCreateChoiceData" :key="item.name" :command="item.id">{{ item.name }}
-          </el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
-      <i class="el-icon-time"></i>
+<!--      <el-dropdown @command="handlerNewCommand">-->
+<!--        <span style="cursor: pointer;"><i style="color: #f2f2f2" class="el-icon-circle-plus el-icon&#45;&#45;right"></i></span>-->
+<!--        <el-dropdown-menu slot="dropdown">-->
+<!--          <el-dropdown-item v-for="item of newCreateChoiceData" :key="item.name" :command="item.id">{{ item.name }}-->
+<!--          </el-dropdown-item>-->
+<!--        </el-dropdown-menu>-->
+<!--      </el-dropdown>-->
+<!--      <i class="el-icon-time"></i>-->
       <el-dropdown :hide-on-click="false">
         <span class="el-dropdown-link">
             <img
@@ -151,11 +170,13 @@ export default {
   data() {
     return {
       defaultActiveMenu: '',
+      activeIndex: '个人中心',
       searchInput: '',
       folderCurrentKey: "",
       newCreateChoiceData: [
         // {name: '互动', id: 'dialogue'}, {name: '桶', id: 'bucket'}, {name: '组织', id: 'organization'},
-        {name: '桶', id: 'bucket'}, {name: '组织', id: 'organization'},
+        {name: '桶', id: 'bucket'},
+        {name: '组织', id: 'organization'},
       ],
       newBucket: {
         name: "",
@@ -342,18 +363,24 @@ export default {
     },
     handlerSelectMenu(key, keyPath) {
       console.log(key, keyPath)
-      if (keyPath.indexOf('org') !== -1) {
+      this.activeIndex = key
+      if (keyPath.indexOf('zzz') !== -1) {
         this.$router.push({
           name: 'Creation',
           query: {_: +new Date()},
           params: {type: 'organization', id: key}
         })
       }
-      if (keyPath.indexOf('user') !== -1) {
+      if (keyPath.indexOf('个人中心') !== -1) {
         this.$router.push({
           name: 'Creation', query: {_: +new Date()}, params: {type: 'user'}
         })
       }
+    },
+    handleSelect(key,keyPath) {
+      console.log('key', key)
+      this.activeIndex = key
+      console.log('keyPath', keyPath)
     }
   }
 }
@@ -410,5 +437,11 @@ export default {
       }
     }
   }
+}
+::v-deep .el-menu--horizontal > .el-submenu .el-submenu__icon-arrow {
+  color: white;
+}
+::v-deep .el-menu--horizontal > .el-submenu.is-active .el-submenu__title {
+  border-bottom: none;
 }
 </style>

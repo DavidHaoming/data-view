@@ -228,6 +228,7 @@ export default {
     },
     handleExplorerChange(node) {
       if (node.leaf === true) {
+        this.expandedList.push(node.id)
         let query = Object.assign({}, this.$route.query)
         query.id = node.id
         query._ = +new Date()

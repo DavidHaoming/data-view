@@ -71,12 +71,14 @@ export default {
   height: 100%;
   width: 300px;
   transition-property: width;
-  transition-duration: 1s;
+  /*transition-duration: 1s;*/
+  transition:all 0.28s ease-in 0.1s
 }
 .left-asides {
   height: 100%;
   width: 50px;
   transition-property: width;
-  transition-duration: 1s;
+  /*transition-duration: ;*/
+  transition:all 0.28s ease-in 0.1s
 }
 </style>

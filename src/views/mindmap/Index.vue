@@ -20,7 +20,7 @@
         </el-select>
       </div>
     </div>
-    <div class="right-aside">
+    <div class="right-aside" v-if="isDisplay">
       <el-tabs style="height: 100%;border: none;" v-model="activeRightAside" type="border-card" :stretch="true"
                @tab-click="handleClickRightAsideTab">
         <el-tab-pane label="节点样式" name="style">
@@ -103,6 +103,7 @@ export default {
   data() {
     return {
       isHide: 1,
+      isDisplay:true,
       ME: null,
       dialogueId: '',
       dialogueContent: 'default',
@@ -411,6 +412,7 @@ export default {
     handlerGetDialogue(r) {
       this.dialogueId = r.query.id || ''
       this.showCenterMindMap = true
+      this.isDisplay = true
       if (this.dialogueId !== '') {
         getOneDialogue({id: this.dialogueId}).then((res) => {
           this.dialogue = res.data.getOneDialogue
@@ -424,6 +426,7 @@ export default {
       } else {
         this.$message.info('请新建/打开一个对话')
         this.showCenterMindMap = false
+        this.isDisplay = false
       }
     },
     handlerInitMindMap() {
@@ -755,6 +758,7 @@ export default {
     // 隐藏菜单栏
     hideMenu() {
       this.$emit('hideMenu', this.isHide++,)
+      this.isDisplay = false
     }
   }
 }
@@ -795,6 +799,8 @@ export default {
 .right-aside {
   flex: 0 0 300px;
   text-align: start;
+  transition-property: width;
+  transition-duration: 1s;
 }
 
 .right-aside >>> .el-tabs__content {

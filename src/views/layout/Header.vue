@@ -15,7 +15,7 @@
          <template v-if="$store.state.organization.length > 0">
          <el-menu-item :index="org.name" v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>
          </template>
-         <el-menu-item index="个人中心">个人空间</el-menu-item>
+         <el-menu-item index="个人空间">个人空间</el-menu-item>
          <el-menu-item v-for="item of newCreateChoiceData" :key="item.name" :index="item.name" @click="handlerNewCommand(item.id)" >{{item.name}}</el-menu-item>
        </el-submenu>
      </el-menu>
@@ -174,7 +174,7 @@ export default {
   data() {
     return {
       defaultActiveMenu: '',
-      activeIndex: '个人中心',
+      activeIndex: '个人空间',
       searchInput: '',
       folderCurrentKey: "",
       newCreateChoiceData: [
@@ -375,7 +375,7 @@ export default {
           params: {type: 'organization', id: key}
         })
       }
-      if (keyPath.indexOf('个人中心') !== -1) {
+      if (keyPath.indexOf('个人空间') !== -1) {
         this.$router.push({
           name: 'Creation', query: {_: +new Date()}, params: {type: 'user'}
         })

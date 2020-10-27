@@ -84,6 +84,7 @@
         <el-button type="primary" @click="handlerNewDialogueSubmit">确 定</el-button>
       </div>
     </el-dialog>
+      <div class="bottomTitle">Sibbay 互动创作平台</div>
     </div>
   </div>
 
@@ -276,6 +277,12 @@ export default {
 .left-aside {
   display: flex;
 }
+.bottomTitle{
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+}
 .collapsed-menu {
   flex: 0 0 44px;
   width: 44px;
@@ -302,6 +309,7 @@ export default {
 .left-menu {
   flex: 1;
   background: #F8F8FA;
+  position: relative;
 }
 
 .step-menu {

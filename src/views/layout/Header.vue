@@ -50,18 +50,22 @@
 <!--        </el-dropdown-menu>-->
 <!--      </el-dropdown>-->
 <!--      <i class="el-icon-time"></i>-->
-      <el-dropdown :hide-on-click="false">
+<!--      <el-dropdown :hide-on-click="false" trigger="click">-->
         <span class="el-dropdown-link">
             <img
                 src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1599066548358&di=d20d79b417da211d54dc2fcf81814b8c&imgtype=0&src=http%3A%2F%2Fn.sinaimg.cn%2Fsinacn14%2F480%2Fw640h640%2F20181003%2Fbad0-hkvrhps2107172.jpg"
                 alt="">
-            <i class="el-icon-caret-bottom"></i>
+<!--            <i class="el-icon-caret-bottom"></i>-->
         </span>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item>个人信息</el-dropdown-item>
-          <el-dropdown-item>退出登录</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+       <div class="share">
+         <span style="border-right: 1px dashed #cecdcd; opacity: 0.8">协作</span>
+         <span style="opacity: 0.8">分享</span>
+       </div>
+<!--        <el-dropdown-menu slot="dropdown">-->
+<!--          <el-dropdown-item>个人信息</el-dropdown-item>-->
+<!--          <el-dropdown-item>退出登录</el-dropdown-item>-->
+<!--        </el-dropdown-menu>-->
+<!--      </el-dropdown>-->
     </div>
 
     <!--新建桶-->
@@ -411,15 +415,23 @@ export default {
   .dropMenu {
     display: flex;
     position: fixed;
-    height: 30px;
-    right: 60px;
-
+    text-align: center;
+    border-left: 1px dotted #ffffff;
+    width: 200px;
+    right: 100px;
+    cursor: pointer;
     i {
       font-size: 20px;
       margin-top: 20px;
       margin-left: 20px;
     }
-
+    .el-dropdown{
+      display: inline-block;
+      position: relative;
+      color: #606266;
+      height: 60px;
+      font-size: 14px;
+    }
     .el-dropdown-link {
       margin-left: 20px;
 
@@ -443,5 +455,28 @@ export default {
 }
 ::v-deep .el-menu--horizontal > .el-submenu.is-active .el-submenu__title {
   border-bottom: none;
+}
+::v-deep.el-popper{
+  transform-origin: center top;
+  z-index: 2006;
+  position: fixed;
+  top: 45px;
+  left: 1614px;
+}
+.share{
+  margin-left: 20px;
+  background-color: #ffffff;
+  width: 200px;
+  display: flex;
+  justify-content: space-around;
+  height: 40px;
+  line-height: 40px;
+  margin-top: 10px;
+  color: black;
+  border-radius: 5px;
+  font-size: 16px;
+  span{
+      width: 70px;
+  }
 }
 </style>

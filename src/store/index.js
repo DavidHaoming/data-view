@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import {getLogin} from "@/api"
+import {nodeTemplateList, nodeAttributeTemplate} from "./var"
 
 Vue.use(Vuex)
 
@@ -10,7 +11,29 @@ export default new Vuex.Store({
     auth: false,
     userInfo: {},
     organization: [],
-    defaultDialogueContent: `{"nodeData":{"id":"root","topic":"新互动","root":true,"children":[]},"linkData":{}}`
+    defaultDialogueContent: `{"nodeData":{"id":"root","topic":"新互动","root":true,"children":[]},"linkData":{}}`,
+    nodeTemplate: nodeTemplateList,
+    nodeAttributeTemplate: nodeAttributeTemplate,
+    predefineColors: [
+      '#2c3e50',
+      '#34495e',
+      '#7f8c8d',
+      '#94a5a6',
+      '#bdc3c7',
+      '#ecf0f1',
+      '#8e44ad',
+      '#9b59b6',
+      '#2980b9',
+      '#3298db',
+      '#c0392c',
+      '#e74c3c',
+      '#d35400',
+      '#f39c11',
+      '#f1c40e',
+      '#17a085',
+      '#27ae61',
+      '#2ecc71',
+    ],
   },
   mutations: {
     setToken (state, token) {

@@ -34,13 +34,13 @@
                     </div>
                   </el-form-item>
                   <el-form-item label="">
-                    <el-color-picker @change="updateNodeStyle('color')" v-model="selectColor" :predefine="predefineColors" size="mini"></el-color-picker>
+                    <el-color-picker @change="updateNodeStyle('color')" v-model="selectColor" :predefine="$store.state.predefineColors" size="mini"></el-color-picker>
                   </el-form-item>
                 </el-form>
                 <el-form :disabled="styleFormState" :inline="true" class="aside-form-inline" size="mini">
                   <el-form-item label="背景">
                     <div style="margin-left: 10px">
-                      <el-color-picker @change="updateNodeStyle('background')" v-model="selectBackground" :predefine="predefineColors"
+                      <el-color-picker @change="updateNodeStyle('background')" v-model="selectBackground" :predefine="$store.state.predefineColors"
                                        size="mini"></el-color-picker>
                     </div>
                   </el-form-item>
@@ -88,15 +88,44 @@
                 id="previewIframe"
                 name="previewIframe"
                 ref="previewIframe"
-                style="border: none;height: 800px;width: 270px"
+                style="border: none;height: 600px;width: 270px"
                 :src="previewURL"
             >
               您当前的浏览器不支持页面上的功能，请升级您当前的浏览器版本或使用谷歌浏览器访问当前页面
             </iframe>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="属性" name="attribute">
-          <div style="padding: 15px;"></div>
+        <el-tab-pane label="属性" name="attribute" :disabled="asideAttributeTabDisableState">
+          <div class="aside-attri-template-group">
+            <el-radio-group v-model="attributeTemplateValue" @change="handlerAttributeTemplateChange" size="small">
+              <el-radio-button
+                  :label="item.label"
+                  v-for="item in attributeTemplateList"
+                  :key="item.label"
+              ></el-radio-button>
+            </el-radio-group>
+          </div>
+          <editor
+              height="600px"
+              ref="attributeEditor"
+              :options="{
+                  enableBasicAutocompletion: true,
+                  enableSnippets: true,
+                  enableLiveAutocompletion: true,
+                  tabSize: 2
+                }"
+              :content="nodeAttribute"
+              :fontSize='14'
+              :lang="'json'"
+              :theme="'monokai'"
+              @onChange="attributeEditorChange"
+              @init="attributeEditorInit">
+          </editor>
+          <div class="aside-attri-template-group">
+            <el-tooltip class="item" effect="dark" content="也可点击对话空白处自动更新" placement="bottom">
+              <el-button type="primary" @click="handlerUpdateAttributeData" round>立即更新属性</el-button>
+            </el-tooltip>
+          </div>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -117,6 +146,10 @@ export default {
   data() {
     return {
       ME: null,
+      nodeAttribute: '',
+      needUpdateAttributeData: {id: '', attribute: {}},
+      attributeTemplateValue: '',
+      attributeTemplateList: [],
       previewURL: PREVIEW_TOOL_URL + '/?mapload=local',
       previewToolLoading: false,
       dialogueId: '',
@@ -124,6 +157,7 @@ export default {
       showCenterMindMap: true,
       textTarget: false,
       asideCodeTabDisableState: true,
+      asideAttributeTabDisableState: true,
       inputTextTarget: [],
       selectedText: '',
       optionsTextTarget: [],
@@ -133,189 +167,6 @@ export default {
       editMindMap: {node: null, div: null},
       selectedMindMap: {node: null, div: null, obj: null},
       activeRightAside: 'style',
-      nodeTemplate: [
-        {
-          style: {
-            background: 'rgb(80, 194, 139)',
-            color: '#fff',
-            border: '',
-            borderRadius: '5px'
-          },
-          children: [
-            {
-              style: {
-                background: 'rgb(80, 194, 139)',
-                color: '#fff',
-                border: '',
-                borderRadius: '5px'
-              },
-              text: '文字节点',
-              id: 'show',
-            },
-            {
-              style: {
-                background: '',
-                color: 'rgb(102, 102, 102)',
-                border: '',
-              },
-              children: [],
-              text: '单选节点',
-              icons: ['➊'],
-              id: 'single_choice'
-            },
-            {
-              style: {
-                background: '',
-                color: 'rgb(102, 102, 102)',
-                border: '',
-              },
-              children: [],
-              text: '动画单选',
-              icons: ['🔮'],
-              id: 'single_task_choice'
-            },
-            {
-              style: {
-                background: '',
-                color: 'rgb(102, 102, 102)',
-                border: '',
-              },
-              children: [],
-              text: '多选节点',
-              icons: ['☑'],
-              id: 'multi_choice'
-            },
-            {
-              style: {
-                background: '',
-                color: 'rgb(102, 102, 102)',
-                border: '',
-              },
-              children: [],
-              text: '继续节点',
-              icons: ['►'],
-              id: 'continue'
-            },
-            {
-              style: {
-                background: '',
-                color: 'rgb(102, 102, 102)',
-                border: '',
-              },
-              children: [],
-              text: '语音输入',
-              icons: ['🔉'],
-              id: 'voice_input'
-            },
-            {
-              style: {
-                background: '',
-                color: 'rgb(102, 102, 102)',
-                border: '',
-              },
-              children: [],
-              text: '语音文字',
-              icons: ['📝'],
-              id: 'voice_text_input'
-            },
-            {
-              style: {
-                background: '',
-                color: 'rgb(102, 102, 102)',
-                border: '',
-              },
-              children: [],
-              text: '文字输入',
-              icons: ['✏️'],
-              id: 'text_input'
-            },
-            {
-              style: {
-                background: '',
-                color: 'rgb(102, 102, 102)',
-                border: '',
-              },
-              children: [],
-              text: '延时节点',
-              icons: ['⏱️'],
-              id: 'delayed'
-            },
-            {
-              style: {
-                background: '',
-                color: 'rgb(102, 102, 102)',
-                border: '',
-              },
-              children: [],
-              text: '拨轮节点',
-              icons: ['📅'],
-              id: 'wheel'
-            },
-            {
-              style: {
-                background: '',
-                color: 'rgb(102, 102, 102)',
-                border: '',
-              },
-              children: [],
-              text: '能量节点',
-              icons: ['🔆'],
-              id: 'energy'
-            }
-          ],
-          text: '文字节点',
-          id: 'show'
-        },
-        {
-          style: {
-            background: '#fff',
-            color: '#666',
-            border: '1px dashed #888',
-            borderRadius: '0px'
-          },
-          text: '条件节点(E)',
-          id: 'condition_edit'
-        },
-        {
-          style: {
-            background: '#fff',
-            color: '#666',
-            border: '1px solid #888',
-            borderRadius: '0px'
-          },
-          text: '条件节点(D)',
-          id: 'condition_design'
-        },
-        {
-          style: {
-            background: '#fff',
-            color: '#4b4b4b',
-            border: '2px solid #b8d7fb',
-            borderRadius: '20px'
-          },
-          text: '业务节点(E)',
-          id: 'code_edit'
-        },
-        {
-          style: {
-            background: '#dbe2e3',
-            color: '#434b54',
-            borderRadius: '6px'
-          },
-          text: '代码节点(D)',
-          id: 'code_design'
-        },
-        {
-          style: {
-            background: '#fff',
-            color: '#f29a66',
-            border: '2px solid #f29a66',
-            borderRadius: '20px'
-          },
-          text: '步骤节点',
-          id: 'bunch'
-        }
-      ],
       cmdTemplateIDs: [
         'single_choice', 'single_task_choice', 'multi_choice', 'continue',
         'voice_input', 'voice_text_input', 'text_input', 'delayed', 'wheel', 'energy'
@@ -324,26 +175,6 @@ export default {
       selectColor: '#FFFFF8',
       selectBackground: '#FFFFFF',
       selectFontSize: '15',
-      predefineColors: [
-        '#2c3e50',
-        '#34495e',
-        '#7f8c8d',
-        '#94a5a6',
-        '#bdc3c7',
-        '#ecf0f1',
-        '#8e44ad',
-        '#9b59b6',
-        '#2980b9',
-        '#3298db',
-        '#c0392c',
-        '#e74c3c',
-        '#d35400',
-        '#f39c11',
-        '#f1c40e',
-        '#17a085',
-        '#27ae61',
-        '#2ecc71',
-      ],
       templateClass: 'aside-template-disabled',
       styleFormState: true,
       keySelecting: {e: null, i: null},
@@ -429,6 +260,12 @@ export default {
       require('brace/theme/monokai')
       require('brace/snippets/python') //snippet
     },
+    attributeEditorInit() {
+      require('brace/ext/language_tools') //language extension prerequsite...
+      require('brace/mode/json')
+      require('brace/theme/monokai')
+      require('brace/snippets/json') //snippet
+    },
     handlerGetDialogue(r) {
       this.dialogueId = r.query.id || ''
       this.showCenterMindMap = true
@@ -461,7 +298,7 @@ export default {
         editable: true,
         contextMenu: true,
         nodeMenuDefaultState: 'close',
-        nodeTemplate: this.nodeTemplate,
+        nodeTemplate: this.$store.state.nodeTemplate,
         contextMenuOption: {
           focus: true,
           link: true,
@@ -621,9 +458,8 @@ export default {
     handleClickRightAsideTab(tab, event) {
       console.log(tab, event)
     },
-    selectedNode(nodeObj) {
+    initPreviewTool(nodeObj) {
       // 预览工具
-      console.log(624, nodeObj.children)
       this.previewToolLoading = true
       let previewData = undefined
       let errmsg = undefined
@@ -634,16 +470,35 @@ export default {
       }
       this.$refs.previewIframe.contentWindow.postMessage({previewData, errmsg}, '*')
       this.previewToolLoading = false
-
-      if (nodeObj.root) return
-      this.selectedMindMap.node = E(nodeObj.id)
-      this.selectedMindMap.obj = this.deepCopyObj(nodeObj)
+    },
+    initAttributeTool(nodeObj) {
+      if (nodeObj.templateID) {
+        let attributeTemplateList = this.$store.state.nodeAttributeTemplate[nodeObj.templateID]
+        if (attributeTemplateList === undefined) {
+          if (this.activeRightAside === 'attribute') this.activeRightAside = 'style'
+          this.asideAttributeTabDisableState = true
+          return
+        }
+        this.attributeTemplateList = attributeTemplateList
+        this.attributeTemplateValue = '一般'
+        this.handlerAttributeTemplateChange('一般')
+        this.asideAttributeTabDisableState = false
+      } else {
+        console.log('selected node no template id')
+        if (this.activeRightAside === 'attribute') this.activeRightAside = 'style'
+        this.asideAttributeTabDisableState = true
+      }
+    },
+    initStyleTool(nodeObj) {
       this.styleFormState = false
       if (nodeObj.style) {
         if (nodeObj.style.color) this.selectColor = nodeObj.style.color
         if (nodeObj.style.background) this.selectBackground = nodeObj.style.background
         if (nodeObj.style.fontSize) this.selectFontSize = nodeObj.style.fontSize
       }
+      this.templateClass = ''
+    },
+    initCodeTool(nodeObj) {
       if (nodeObj.templateID) {
         if (nodeObj.templateID === 'code_design') {
           this.activeRightAside = 'code'
@@ -655,7 +510,18 @@ export default {
           this.asideCode = ''
         }
       }
-      this.templateClass = ''
+    },
+    selectedNode(nodeObj) {
+      // this.dialogueContent = this.ME.getAllDataString() // 执行更新
+      this.initPreviewTool(nodeObj)
+
+      if (nodeObj.root) return
+      this.selectedMindMap.node = E(nodeObj.id)
+      this.selectedMindMap.obj = this.deepCopyObj(nodeObj)
+
+      this.initStyleTool(nodeObj)
+      this.initCodeTool(nodeObj)
+      this.initAttributeTool(nodeObj)
     },
     unSelectedNode() {
       this.templateClass = 'aside-template-disabled'
@@ -666,8 +532,23 @@ export default {
       this.selectFontSize = '15'
       if (this.selectTemplate) this.selectTemplate.className = this.selectTemplate.className.replace(/ aside-template-selected/g, '')
       if (this.activeRightAside === 'code') this.activeRightAside = 'style'
+      if (this.activeRightAside === 'attribute') this.activeRightAside = 'style'
       this.asideCodeTabDisableState = true
       this.asideCode = ''
+      this.attributeTemplateList = []
+      this.attributeTemplateValue = ''
+      this.asideAttributeTabDisableState = true
+      this.handlerNeedUpdateAttributeData()
+      this.dialogueContent = this.ME.getAllDataString() // 执行更新
+    },
+    handlerNeedUpdateAttributeData() {
+      if (this.needUpdateAttributeData.id !== '') {
+        E(this.needUpdateAttributeData.id).nodeObj.attribute = this.needUpdateAttributeData.attribute
+        this.needUpdateAttributeData = {id: '', attribute: {}}
+      }
+    },
+    handlerUpdateAttributeData() {
+      this.handlerNeedUpdateAttributeData()
       this.dialogueContent = this.ME.getAllDataString() // 执行更新
     },
     getAllNodeTemplate(t, r, l = []) {
@@ -681,7 +562,7 @@ export default {
       return r
     },
     allNodeTemplate() {
-      return this.getAllNodeTemplate(this.nodeTemplate, [{
+      return this.getAllNodeTemplate(this.$store.state.nodeTemplate, [{
         id: 'normal', style: {color: 'rgb(102, 102, 102)', background: ''}, text: '初始节点'
       }])
     },
@@ -704,7 +585,7 @@ export default {
       if (id === 'normal') return {
         id: 'normal', style: {color: 'rgb(102, 102, 102)', background: ''}, text: '', icons: []
       }
-      for (const nt of this.nodeTemplate) {
+      for (const nt of this.$store.state.nodeTemplate) {
         if (nt.id === id) return nt
         for (const x of nt.children || []) {
           if (x.id === id) return x
@@ -782,6 +663,19 @@ export default {
       let value = this.codeToHtml(e.getValue())
       if (value && value !== '') this.ME.setNodeTopic(E(this.ME.currentNode.nodeObj.id), value)
     },
+    attributeEditorChange(e) {
+      if (!this.ME.currentNode || e.getValue() === '') return
+      try {
+        let value = JSON.parse(e.getValue())
+        if (value && value !== '') {
+          // 不立即更新属性, 因为避免多次切换模板产生大量无用数据, 存在一个 needUpdateAttributeData 里
+          this.needUpdateAttributeData.id = this.ME.currentNode.nodeObj.id
+          this.needUpdateAttributeData.attribute = value
+        }
+      } catch (err) {
+        console.log(err, e.getValue())
+      }
+    },
     codeToHtml(code) {
       return code.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')
     },
@@ -795,6 +689,19 @@ export default {
         if (k === 'to') return v.nodeObj.id
         return v
       }))
+    },
+    handlerAttributeTemplateChange(label) {
+      this.attributeTemplateList.forEach((v) => {
+        if (v.label === label) {
+          let value = v.value
+          // 合并原数据
+          let currentAttributeValue = this.ME.currentNode.nodeObj.attribute
+          if (currentAttributeValue !== undefined) {
+            value = Object.assign({}, value, currentAttributeValue)
+          }
+          this.nodeAttribute = JSON.stringify(value, null, 2)
+        }
+      })
     }
   }
 }
@@ -865,6 +772,12 @@ export default {
   line-height: 30px;
   border: 1px solid #888;
   cursor: pointer;
+}
+
+.aside-attri-template-group {
+  margin: 10px 8px;
+  display: flex;
+  justify-content: center;
 }
 
 .aside-template-selected {

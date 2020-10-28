@@ -1,7 +1,7 @@
 <template>
   <div class="center" ref="centerMindMap" v-if="showCenterMindMap">
-    <div class="center-main" @click="hideMenu">
-      <div id="mindmap"></div>
+    <div class="center-main">
+      <div id="mindmap" ></div>
       <div v-if="textTarget" class="text-target"
            :style="`top: ${cursor.y-25}px;left: ${cursor.x}px;`">
         <el-select
@@ -20,73 +20,80 @@
         </el-select>
       </div>
     </div>
-    <div class="right-aside" v-if="isDisplay">
-      <el-tabs style="height: 100%;border: none;" v-model="activeRightAside" type="border-card" :stretch="true"
-               @tab-click="handleClickRightAsideTab">
-        <el-tab-pane label="节点样式" name="style">
-          <div style="padding: 15px;">
-            <el-form :disabled="styleFormState" label-position="top" label-width="80px" size="mini">
-              <el-form-item label="通用设置">
-                <el-form :disabled="styleFormState" :inline="true" class="aside-form-inline" size="mini">
-                  <el-form-item label="字体">
-                    <div style="margin-left: 10px">
-                      <el-input-number @change="updateNodeStyle('fontSize')" size="mini" style="width: 100px" v-model="selectFontSize"></el-input-number>
-                    </div>
-                  </el-form-item>
-                  <el-form-item label="">
-                    <el-color-picker @change="updateNodeStyle('color')" v-model="selectColor" :predefine="predefineColors" size="mini"></el-color-picker>
-                  </el-form-item>
-                </el-form>
-                <el-form :disabled="styleFormState" :inline="true" class="aside-form-inline" size="mini">
-                  <el-form-item label="背景">
-                    <div style="margin-left: 10px">
-                      <el-color-picker @change="updateNodeStyle('background')" v-model="selectBackground" :predefine="predefineColors"
-                                       size="mini"></el-color-picker>
-                    </div>
-                  </el-form-item>
-                </el-form>
-              </el-form-item>
-              <el-form-item label="节点模板">
-                <div class="aside-template-group">
-                  <div v-for="template in allNodeTemplate()" :class="'aside-template-node ' + templateClass"
-                       @click="updateNodeTemplate"
-                       :key="template.id"
-                       :data-id = "template.id"
-                       :style="`color: ${template.style.color};
+    <div style="display: flex;background-color: #f6f6f6">
+      <div class="rightZoom">
+        <el-image :src="rightImg" @click="hideZoom" width="30px"></el-image>
+      </div>
+      <div :class="isDisplay === false ? 'right-asides' : 'right-aside'" >
+        <el-tabs style="height: 100%;border: none;" v-model="activeRightAside" type="border-card" :stretch="true"
+                 @tab-click="handleClickRightAsideTab" v-if="isDisplay">
+          <el-tab-pane label="节点样式" name="style">
+            <div style="padding: 15px;">
+              <el-form :disabled="styleFormState" label-position="top" label-width="80px" size="mini">
+                <el-form-item label="通用设置">
+                  <el-form :disabled="styleFormState" :inline="true" class="aside-form-inline" size="mini">
+                    <el-form-item label="字体">
+                      <div style="margin-left: 10px">
+                        <el-input-number @change="updateNodeStyle('fontSize')" size="mini" style="width: 100px" v-model="selectFontSize"></el-input-number>
+                      </div>
+                    </el-form-item>
+                    <el-form-item label="">
+                      <el-color-picker @change="updateNodeStyle('color')" v-model="selectColor" :predefine="predefineColors" size="mini"></el-color-picker>
+                    </el-form-item>
+                  </el-form>
+                  <el-form :disabled="styleFormState" :inline="true" class="aside-form-inline" size="mini">
+                    <el-form-item label="背景">
+                      <div style="margin-left: 10px">
+                        <el-color-picker @change="updateNodeStyle('background')" v-model="selectBackground" :predefine="predefineColors"
+                                         size="mini"></el-color-picker>
+                      </div>
+                    </el-form-item>
+                  </el-form>
+                </el-form-item>
+                <el-form-item label="节点模板">
+                  <div class="aside-template-group">
+                    <div v-for="template in allNodeTemplate()" :class="'aside-template-node ' + templateClass"
+                         @click="updateNodeTemplate"
+                         :key="template.id"
+                         :data-id = "template.id"
+                         :style="`color: ${template.style.color};
                             background: ${template.style.background};
                             border: ${template.style.border ? template.style.border : template.style.background ? 'none' : ''};
                             border-radius: ${template.style.borderRadius || '0px'}`">
-                    <span v-html="template.icons ? template.icons[template.icons.length-1] : ''"></span>
-                    {{ template.text }}
+                      <span v-html="template.icons ? template.icons[template.icons.length-1] : ''"></span>
+                      {{ template.text }}
+                    </div>
                   </div>
-                </div>
-              </el-form-item>
-            </el-form>
-          </div>
-        </el-tab-pane>
-        <el-tab-pane label="代码编辑" name="code" :disabled="asideCodeTabDisableState">
-          <editor
-              height="100%"
-              ref="codeEditor"
-              :options="{
+                </el-form-item>
+              </el-form>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="代码编辑" name="code" :disabled="asideCodeTabDisableState">
+            <editor
+                height="100%"
+                ref="codeEditor"
+                :options="{
                 enableBasicAutocompletion: true,
                 enableSnippets: true,
                 enableLiveAutocompletion: true,
                 tabSize: 2
               }"
-              :content="asideCode"
-              :fontSize='14'
-              :lang="'python'"
-              :theme="'monokai'"
-              @onChange="codeEditorChange"
-              @init="codeEditorInit">
-          </editor>
-        </el-tab-pane>
-        <el-tab-pane label="属性设置" name="attribute">
-          <div style="padding: 15px;"></div>
-        </el-tab-pane>
-      </el-tabs>
+                :content="asideCode"
+                :fontSize='14'
+                :lang="'python'"
+                :theme="'monokai'"
+                @onChange="codeEditorChange"
+                @init="codeEditorInit">
+            </editor>
+          </el-tab-pane>
+          <el-tab-pane label="属性设置" name="attribute">
+            <div style="padding: 15px;"></div>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+
     </div>
+
   </div>
 </template>
 
@@ -104,6 +111,7 @@ export default {
     return {
       isHide: 1,
       isDisplay:true,
+      rightImg:require('@/assets/img/rightZoom.png'),
       ME: null,
       dialogueId: '',
       dialogueContent: 'default',
@@ -412,7 +420,7 @@ export default {
     handlerGetDialogue(r) {
       this.dialogueId = r.query.id || ''
       this.showCenterMindMap = true
-      this.isDisplay = true
+      // this.isDisplay = true
       if (this.dialogueId !== '') {
         getOneDialogue({id: this.dialogueId}).then((res) => {
           this.dialogue = res.data.getOneDialogue
@@ -426,7 +434,7 @@ export default {
       } else {
         this.$message.info('请新建/打开一个对话')
         this.showCenterMindMap = false
-        this.isDisplay = false
+        // this.isDisplay = false
       }
     },
     handlerInitMindMap() {
@@ -755,10 +763,8 @@ export default {
     htmlToCode(html) {
       return html.replace(/<br>/g, '\n').replace(/&nbsp;/g, ' ')
     },
-    // 隐藏菜单栏
-    hideMenu() {
-      this.$emit('hideMenu', this.isHide++,)
-      this.isDisplay = false
+    hideZoom() {
+      this.isDisplay = !this.isDisplay
     }
   }
 }
@@ -786,23 +792,34 @@ export default {
 
 .center {
   flex: 1;
-  width: calc(100% - 300px);
+  width: calc(100% - 330px);
   height: 100%;
   display: flex;
 }
 
 .center-main {
   flex: 1;
-  width: calc(100% - 300px);
+  width: calc(100% - 330px);
 }
 
 .right-aside {
-  flex: 0 0 300px;
+  /*flex: 0 0 300px;*/
+  width: 300px;
+  text-align: start;
+  transition-property: width;
+  transition:all 0.2s ease-in 0.2s;
+  position: relative;
+  display: flex;
+}
+.right-asides {
+  width: 0;
   text-align: start;
   transition-property: width;
   transition-duration: 1s;
+  /*transition:all 0.2s ease-in 0.2s;*/
+  position: relative;
+  display: flex;
 }
-
 .right-aside >>> .el-tabs__content {
   padding: 0;
   height: calc(100% - 40px);
@@ -846,5 +863,12 @@ export default {
   margin: 0;
   padding: 0;
 }
-
+.rightZoom{
+  width: 30px;
+  transition-property: width;
+  transition:all 0.2s ease-in 0.2s;
+  align-self:center;
+  cursor: pointer;
+  background-color: #f6f6f6;
+}
 </style>

@@ -1,9 +1,9 @@
 <template>
   <el-row class="creation-main">
-    <div :class="isHide === false ? 'left-asides' : ' left-aside'">
-      <left :hideData="hideData" @onceData="onceData"></left>
+    <div>
+      <left></left>
     </div>
-    <mind-map-index @hideMenu="hideMenu"></mind-map-index>
+    <mind-map-index></mind-map-index>
   </el-row>
 </template>
 
@@ -14,20 +14,12 @@ import {getOneDialogue} from "@/api/graphql/dialogue";
 
 export default {
   name: "Creation",
-  props: {
-    once: {
-      type: Boolean,
-      default: null
-    }
-  },
   components: {
     Left,
     MindMapIndex
   },
   data() {
     return {
-      hideData: 0,
-      isHide: true
     }
   },
   mounted() {
@@ -47,14 +39,6 @@ export default {
         this.$message.info('请新建/打开一个对话')
       }
     },
-    // 接收编辑区传递过来的隐藏
-    hideMenu(data) {
-      this.hideData = data
-      this.isHide = false
-    },
-    onceData(data) {
-      this.isHide = data
-    }
   }
 }
 </script>

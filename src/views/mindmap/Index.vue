@@ -205,7 +205,8 @@ export default {
         parentPath: '',
         content: '',
         history: []
-      }
+      },
+      willUpdateDialogueContent: undefined,
     }
   },
   mounted() {
@@ -239,25 +240,28 @@ export default {
         return
       }
       console.log('do update dialogue')
+
       getOneDialogue({id: this.dialogueId}).then((res) => {
-        const nowDialogue = res.data.getOneDialogue
-        if (nowDialogue.content !== old) {
+        const nowDialogueContent = this.willUpdateDialogueContent || res.data.getOneDialogue.content
+        if (nowDialogueContent !== old) {
           this.$confirm('检测到云端内容已经更新，是否强制覆盖？', '确认信息', {
             distinguishCancelAndClose: true,
             confirmButtonText: '强制覆盖',
             cancelButtonText: '拉取云端'
           }).then(() => {
+            this.willUpdateDialogueContent = val
             updateDialogueContent({id: this.dialogueId, dialogueContent: val}).then(() => {
               this.$message.success("强制覆盖成功")
             })
           }).catch((err) => {
             console.log(err)
             this.isCancelUpdateDialogue = true
-            this.dialogueContent = nowDialogue.content
+            this.dialogueContent = nowDialogueContent
             this.$message.success("拉取云端导图成功")
             this.init()
           })
         } else {
+          this.willUpdateDialogueContent = val
           updateDialogueContent({id: this.dialogueId, dialogueContent: val}).then(() => {
             this.$message.success("导图更新成功")
           })
@@ -359,7 +363,7 @@ export default {
         this.selectedNode(op)
       })
       this.ME.bus.addListener('selectNewNode', op => {
-        this.selectedNode(op)
+        this.selectedNode(op, true)
       })
       this.ME.bus.addListener('unselectNode', () => {
         this.unSelectedNode()
@@ -470,8 +474,13 @@ export default {
       selection.removeAllRanges()
       selection.addRange(range)
     },
-    handleClickRightAsideTab(tab, event) {
-      console.log(tab, event)
+    handleClickRightAsideTab(tab) {
+      if (tab.name === 'code' && this.$refs.codeEditor) {
+        this.$refs.codeEditor.editor.focus()
+      }
+      if (tab.name === 'attribute' && this.$refs.attributeEditor) {
+        this.$refs.attributeEditor.editor.focus()
+      }
     },
     initPreviewTool(nodeObj) {
       // 预览工具
@@ -513,6 +522,12 @@ export default {
       }
       this.templateClass = ''
     },
+    forceCodeEditor(nodeObj) {
+      if (nodeObj.templateID === 'code_design' && this.activeRightAside === 'code' && this.$refs.codeEditor) {
+        this.$refs.codeEditor.editor.setValue(this.asideCode)
+        this.$refs.codeEditor.editor.focus()
+      }
+    },
     initCodeTool(nodeObj) {
       if (nodeObj.templateID) {
         if (nodeObj.templateID === 'code_design') {
@@ -526,8 +541,8 @@ export default {
         }
       }
     },
-    selectedNode(nodeObj) {
-      // this.dialogueContent = this.ME.getAllDataString() // 执行更新
+    selectedNode(nodeObj, isNew=false) {
+      this.dialogueContent = this.ME.getAllDataString() // 执行更新
       this.initPreviewTool(nodeObj)
 
       if (nodeObj.root) return
@@ -536,6 +551,7 @@ export default {
 
       this.initStyleTool(nodeObj)
       this.initCodeTool(nodeObj)
+      if (isNew === true) this.forceCodeEditor(nodeObj)
       this.initAttributeTool(nodeObj)
     },
     unSelectedNode() {
@@ -558,7 +574,7 @@ export default {
     },
     handlerNeedUpdateAttributeData() {
       if (this.needUpdateAttributeData.id !== '') {
-        E(this.needUpdateAttributeData.id).nodeObj.attribute = this.needUpdateAttributeData.attribute
+        if (E(this.needUpdateAttributeData.id)) E(this.needUpdateAttributeData.id).nodeObj.attribute = this.needUpdateAttributeData.attribute
         this.needUpdateAttributeData = {id: '', attribute: {}}
       }
     },
@@ -651,13 +667,12 @@ export default {
       this.ME.updateNodeObjStyle(nodeObj, nodeTemplate)
       this.ME.updateNodeStyle(nodeObj)
       this.selectTemplate.className += ' aside-template-selected'
-      if (nodeTemplate.templateID === 'code_design') {
-        this.activeRightAside = 'code'
-        this.asideCodeTabDisableState = false
-        this.asideCode = nodeObj.topic
-      }
-      console.log({now: this.ME.getAllDataString()})
-      console.log({now: nodeObj})
+
+      this.initStyleTool(nodeObj)
+      this.initCodeTool(nodeObj)
+      this.forceCodeEditor(nodeObj)
+      this.initAttributeTool(nodeObj)
+
       this.dialogueContent = this.ME.getAllDataString() // 执行更新
     },
     updateNodeTemplateByKey() {
@@ -692,10 +707,10 @@ export default {
       }
     },
     codeToHtml(code) {
-      return code.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')
+      return code.replace(/\n/g, '<br>')
     },
     htmlToCode(html) {
-      return html.replace(/<br>/g, '\n').replace(/&nbsp;/g, ' ')
+      return html.replace(/<br>/g, '\n').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     },
     deepCopyObj(data) {
       return JSON.parse(JSON.stringify(data, (k, v) => {
@@ -726,6 +741,7 @@ export default {
             value = Object.assign({}, value, currentAttributeValue)
           }
           this.nodeAttribute = JSON.stringify(value, null, 2)
+          if (this.$refs.attributeEditor) this.$refs.attributeEditor.setValue(this.nodeAttribute)
         }
       })
     }

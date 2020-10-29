@@ -24,9 +24,10 @@
       <div class="rightZoom">
         <el-image :src="rightImg" @click="hideZoom" width="30px"></el-image>
       </div>
+      <transition name="fade">
       <div :class="isDisplay === false ? 'right-asides' : 'right-aside'" >
         <el-tabs style="height: 100%;border: none;" v-model="activeRightAside" type="border-card" :stretch="true"
-                 @tab-click="handleClickRightAsideTab" v-if="isDisplay">
+                 @tab-click="handleClickRightAsideTab" v-if="hideTable">
           <el-tab-pane label="样式" name="style">
             <div style="padding: 15px;">
               <el-form :disabled="styleFormState" label-position="top" label-width="80px" size="mini">
@@ -104,6 +105,7 @@
           </el-tab-pane>
         </el-tabs>
       </div>
+      </transition>
 
     </div>
 
@@ -125,6 +127,7 @@ export default {
     return {
       isHide: 1,
       isDisplay:true,
+      hideTable:true,
       rightImg:require('@/assets/img/rightZoom.png'),
       ME: null,
       previewURL: PREVIEW_TOOL_URL + '/?mapload=local',
@@ -815,6 +818,9 @@ export default {
     },
     hideZoom() {
       this.isDisplay = !this.isDisplay
+      setTimeout( ()=>{
+        this.hideTable = !this.hideTable
+      },400)
     }
   }
 }
@@ -857,18 +863,17 @@ export default {
   width: 300px;
   text-align: start;
   transition-property: width;
-  transition:all 0.2s ease-in 0.2s;
+  transition:all 0.3s ease-in 0.2s;
   position: relative;
-  display: flex;
+  /*display: flex;*/
 }
 .right-asides {
   width: 0;
   text-align: start;
   transition-property: width;
-  transition-duration: 1s;
-  /*transition:all 0.2s ease-in 0.2s;*/
+  transition:all 0.3s ease-in 0.2s;
   position: relative;
-  display: flex;
+  /*display: flex;*/
 }
 .right-aside >>> .el-tabs__content {
   padding: 0;
@@ -915,10 +920,11 @@ export default {
 }
 .rightZoom{
   width: 30px;
-  transition-property: width;
-  transition:all 0.2s ease-in 0.2s;
   align-self:center;
   cursor: pointer;
   background-color: #f6f6f6;
+}
+.aside-template-group{
+  width: 270px;
 }
 </style>

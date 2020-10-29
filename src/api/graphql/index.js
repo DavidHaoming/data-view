@@ -10,7 +10,7 @@ const ac = function () {
         uri: `${API_URL}/api/graph`, // 配置请求url
         headers: {
             Authorization: store.state.token
-        }
+        },
     })
 }
 

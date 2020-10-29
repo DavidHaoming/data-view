@@ -8,15 +8,15 @@
          background-color="#0088ff"
          text-color="#ffffff"
          mode="horizontal"
-         active-text-color="#FFD04B"
+         active-text-color="#ffffff"
          @select="handlerSelectMenu">
        <el-submenu index="2">
          <template slot="title">{{activeIndex}}</template>
          <template v-if="$store.state.organization.length > 0">
-         <el-menu-item :index="org.name" v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>
+         <el-menu-item :index='"{" + `"id"` + ":"+  `"${org.id}"` + "," + `"name"` + ":" + `"${org.name}"` + "}"' v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>
          </template>
          <el-menu-item index="个人空间">个人空间</el-menu-item>
-         <el-menu-item v-for="item of newCreateChoiceData" :key="item.name" :index="item.name" @click="handlerNewCommand(item.id)" >{{item.name}}</el-menu-item>
+         <el-menu-item v-for="item of newCreateChoiceData" :key="item.name" :index="item.name" @click="handlerNewCommand(item.id)" >新增{{item.name}}</el-menu-item>
        </el-submenu>
      </el-menu>
     </div>
@@ -26,21 +26,21 @@
         v-model="searchInput"
         class="search">
     </el-input>
-<!--    <el-menu-->
-<!--        :default-active="defaultActiveMenu"-->
-<!--        mode="horizontal"-->
-<!--        class="menu"-->
-<!--        @select="handlerSelectMenu"-->
-<!--        background-color="#0088ff"-->
-<!--        text-color="#f2f2f2"-->
-<!--        active-text-color="#FFD04B">-->
-<!--      <el-submenu index="org" v-if="$store.state.organization.length > 0">-->
-<!--        <template slot="title">组织空间</template>-->
-<!--        <el-menu-item :index="org.id" v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>-->
-<!--      </el-submenu>-->
-<!--      <el-menu-item index="user">个人空间</el-menu-item>-->
-<!--      <el-menu-item index="template">模板广场</el-menu-item>-->
-<!--    </el-menu>-->
+    <el-menu
+        :default-active="defaultActiveMenu"
+        mode="horizontal"
+        class="menu"
+        @select="handlerSelectMenu"
+        background-color="#0088ff"
+        text-color="#f2f2f2"
+        active-text-color="#FFD04B">
+      <el-submenu index="org" v-if="$store.state.organization.length > 0">
+        <template slot="title">组织空间</template>
+        <el-menu-item :index="org.id" v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>
+      </el-submenu>
+      <el-menu-item index="user">个人空间</el-menu-item>
+      <el-menu-item index="template">模板广场</el-menu-item>
+    </el-menu>
     <div class="dropMenu">
 <!--      <el-dropdown @command="handlerNewCommand">-->
 <!--        <span style="cursor: pointer;"><i style="color: #f2f2f2" class="el-icon-circle-plus el-icon&#45;&#45;right"></i></span>-->
@@ -366,20 +366,37 @@ export default {
       })
     },
     handlerSelectMenu(key, keyPath) {
-      console.log(key, keyPath)
-      this.activeIndex = key
-      if (keyPath.indexOf('zzz') !== -1) {
+      console.log(key)
+      // const a = '{"id":"5f928554b315e5bdfc23c26e","name":"vvv"}'
+      // console.log(JSON.parse(key))
+      if (key.indexOf('{') !== -1 ) {
+        let keyValue = JSON.parse(key)
+        this.activeIndex = keyValue.name
         this.$router.push({
           name: 'Creation',
           query: {_: +new Date()},
-          params: {type: 'organization', id: key}
+          params: {type: 'organization', id: keyValue.id}
         })
+      } else {
+        this.activeIndex = key
+        if (keyPath.indexOf('个人空间') !== -1) {
+          this.$router.push({
+            name: 'Creation', query: {_: +new Date()}, params: {type: 'user'}
+          })
+        }
       }
-      if (keyPath.indexOf('个人空间') !== -1) {
-        this.$router.push({
-          name: 'Creation', query: {_: +new Date()}, params: {type: 'user'}
-        })
-      }
+      // if (keyPath.indexOf('zzz') !== -1) {
+      //   this.$router.push({
+      //     name: 'Creation',
+      //     query: {_: +new Date()},
+      //     params: {type: 'organization', id: key}
+      //   })
+      // }
+      // if (keyPath.indexOf('个人空间') !== -1) {
+      //   this.$router.push({
+      //     name: 'Creation', query: {_: +new Date()}, params: {type: 'user'}
+      //   })
+      // }
     },
     handleSelect(key,keyPath) {
       console.log('key', key)
@@ -479,4 +496,5 @@ export default {
       width: 70px;
   }
 }
+
 </style>

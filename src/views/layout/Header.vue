@@ -26,21 +26,6 @@
         v-model="searchInput"
         class="search">
     </el-input>
-    <el-menu
-        :default-active="defaultActiveMenu"
-        mode="horizontal"
-        class="menu"
-        @select="handlerSelectMenu"
-        background-color="#0088ff"
-        text-color="#f2f2f2"
-        active-text-color="#FFD04B">
-      <el-submenu index="org" v-if="$store.state.organization.length > 0">
-        <template slot="title">组织空间</template>
-        <el-menu-item :index="org.id" v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>
-      </el-submenu>
-      <el-menu-item index="user">个人空间</el-menu-item>
-      <el-menu-item index="template">模板广场</el-menu-item>
-    </el-menu>
     <div class="dropMenu">
 <!--      <el-dropdown @command="handlerNewCommand">-->
 <!--        <span style="cursor: pointer;"><i style="color: #f2f2f2" class="el-icon-circle-plus el-icon&#45;&#45;right"></i></span>-->
@@ -433,7 +418,6 @@ export default {
     display: flex;
     position: fixed;
     text-align: center;
-    border-left: 1px dotted #ffffff;
     width: 200px;
     right: 100px;
     cursor: pointer;

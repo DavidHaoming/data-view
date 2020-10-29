@@ -1,48 +1,56 @@
 <template>
   <div class="nav">
-    <div class="title">Sibbay 互动创作平台</div>
+<!--    <div class="title">Sibbay 互动创作平台</div>-->
+    <div class="title">
+     <el-menu 
+         :default-active="activeIndex"
+         class="el-menu-demo"
+         background-color="#0088ff"
+         text-color="#ffffff"
+         mode="horizontal"
+         active-text-color="#ffffff"
+         @select="handlerSelectMenu">
+       <el-submenu index="2">
+         <template slot="title">{{activeIndex}}</template>
+         <template v-if="$store.state.organization.length > 0">
+         <el-menu-item :index='"{" + `"id"` + ":"+  `"${org.id}"` + "," + `"name"` + ":" + `"${org.name}"` + "}"' v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>
+         </template>
+         <el-menu-item index="个人空间">个人空间</el-menu-item>
+         <el-menu-item v-for="item of newCreateChoiceData" :key="item.name" :index="item.name" @click="handlerNewCommand(item.id)" >新增{{item.name}}</el-menu-item>
+       </el-submenu>
+     </el-menu>
+    </div>
     <el-input
         prefix-icon="el-icon-search"
         size="small"
         v-model="searchInput"
         class="search">
     </el-input>
-    <el-menu
-        :default-active="defaultActiveMenu"
-        mode="horizontal"
-        class="menu"
-        @select="handlerSelectMenu"
-        background-color="#0088ff"
-        text-color="#f2f2f2"
-        active-text-color="#FFD04B">
-      <el-submenu index="org" v-if="$store.state.organization.length > 0">
-        <template slot="title">组织空间</template>
-        <el-menu-item :index="org.id" v-for="org in $store.state.organization" :key="org.id">{{org.name}}</el-menu-item>
-      </el-submenu>
-      <el-menu-item index="user">个人空间</el-menu-item>
-      <el-menu-item index="template">模板广场</el-menu-item>
-    </el-menu>
     <div class="dropMenu">
-      <el-dropdown @command="handlerNewCommand">
-        <span style="cursor: pointer;"><i style="color: #f2f2f2" class="el-icon-circle-plus el-icon--right"></i></span>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item v-for="item of newCreateChoiceData" :key="item.name" :command="item.id">{{ item.name }}
-          </el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
-      <i class="el-icon-time"></i>
-      <el-dropdown :hide-on-click="false">
+<!--      <el-dropdown @command="handlerNewCommand">-->
+<!--        <span style="cursor: pointer;"><i style="color: #f2f2f2" class="el-icon-circle-plus el-icon&#45;&#45;right"></i></span>-->
+<!--        <el-dropdown-menu slot="dropdown">-->
+<!--          <el-dropdown-item v-for="item of newCreateChoiceData" :key="item.name" :command="item.id">{{ item.name }}-->
+<!--          </el-dropdown-item>-->
+<!--        </el-dropdown-menu>-->
+<!--      </el-dropdown>-->
+<!--      <i class="el-icon-time"></i>-->
+<!--      <el-dropdown :hide-on-click="false" trigger="click">-->
         <span class="el-dropdown-link">
             <img
                 src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1599066548358&di=d20d79b417da211d54dc2fcf81814b8c&imgtype=0&src=http%3A%2F%2Fn.sinaimg.cn%2Fsinacn14%2F480%2Fw640h640%2F20181003%2Fbad0-hkvrhps2107172.jpg"
                 alt="">
-            <i class="el-icon-caret-bottom"></i>
+<!--            <i class="el-icon-caret-bottom"></i>-->
         </span>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item>个人信息</el-dropdown-item>
-          <el-dropdown-item>退出登录</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+       <div class="share">
+         <span style="border-right: 1px dashed #cecdcd; opacity: 0.8">协作</span>
+         <span style="opacity: 0.8">分享</span>
+       </div>
+<!--        <el-dropdown-menu slot="dropdown">-->
+<!--          <el-dropdown-item>个人信息</el-dropdown-item>-->
+<!--          <el-dropdown-item>退出登录</el-dropdown-item>-->
+<!--        </el-dropdown-menu>-->
+<!--      </el-dropdown>-->
     </div>
 
     <!--新建桶-->
@@ -151,11 +159,13 @@ export default {
   data() {
     return {
       defaultActiveMenu: '',
+      activeIndex: '个人空间',
       searchInput: '',
       folderCurrentKey: "",
       newCreateChoiceData: [
         // {name: '互动', id: 'dialogue'}, {name: '桶', id: 'bucket'}, {name: '组织', id: 'organization'},
-        {name: '桶', id: 'bucket'}, {name: '组织', id: 'organization'},
+        {name: '桶', id: 'bucket'},
+        {name: '组织', id: 'organization'},
       ],
       newBucket: {
         name: "",
@@ -341,19 +351,42 @@ export default {
       })
     },
     handlerSelectMenu(key, keyPath) {
-      console.log(key, keyPath)
-      if (keyPath.indexOf('org') !== -1) {
+      console.log(key)
+      // const a = '{"id":"5f928554b315e5bdfc23c26e","name":"vvv"}'
+      // console.log(JSON.parse(key))
+      if (key.indexOf('{') !== -1 ) {
+        let keyValue = JSON.parse(key)
+        this.activeIndex = keyValue.name
         this.$router.push({
           name: 'Creation',
           query: {_: +new Date()},
-          params: {type: 'organization', id: key}
+          params: {type: 'organization', id: keyValue.id}
         })
+      } else {
+        this.activeIndex = key
+        if (keyPath.indexOf('个人空间') !== -1) {
+          this.$router.push({
+            name: 'Creation', query: {_: +new Date()}, params: {type: 'user'}
+          })
+        }
       }
-      if (keyPath.indexOf('user') !== -1) {
-        this.$router.push({
-          name: 'Creation', query: {_: +new Date()}, params: {type: 'user'}
-        })
-      }
+      // if (keyPath.indexOf('zzz') !== -1) {
+      //   this.$router.push({
+      //     name: 'Creation',
+      //     query: {_: +new Date()},
+      //     params: {type: 'organization', id: key}
+      //   })
+      // }
+      // if (keyPath.indexOf('个人空间') !== -1) {
+      //   this.$router.push({
+      //     name: 'Creation', query: {_: +new Date()}, params: {type: 'user'}
+      //   })
+      // }
+    },
+    handleSelect(key,keyPath) {
+      console.log('key', key)
+      this.activeIndex = key
+      console.log('keyPath', keyPath)
     }
   }
 }
@@ -384,15 +417,22 @@ export default {
   .dropMenu {
     display: flex;
     position: fixed;
-    height: 30px;
-    right: 60px;
-
+    text-align: center;
+    width: 200px;
+    right: 100px;
+    cursor: pointer;
     i {
       font-size: 20px;
       margin-top: 20px;
       margin-left: 20px;
     }
-
+    .el-dropdown{
+      display: inline-block;
+      position: relative;
+      color: #606266;
+      height: 60px;
+      font-size: 14px;
+    }
     .el-dropdown-link {
       margin-left: 20px;
 
@@ -411,4 +451,34 @@ export default {
     }
   }
 }
+::v-deep .el-menu--horizontal > .el-submenu .el-submenu__icon-arrow {
+  color: white;
+}
+::v-deep .el-menu--horizontal > .el-submenu.is-active .el-submenu__title {
+  border-bottom: none;
+}
+::v-deep.el-popper{
+  transform-origin: center top;
+  z-index: 2006;
+  position: fixed;
+  top: 45px;
+  left: 1614px;
+}
+.share{
+  margin-left: 20px;
+  background-color: #ffffff;
+  width: 200px;
+  display: flex;
+  justify-content: space-around;
+  height: 40px;
+  line-height: 40px;
+  margin-top: 10px;
+  color: black;
+  border-radius: 5px;
+  font-size: 16px;
+  span{
+      width: 70px;
+  }
+}
+
 </style>

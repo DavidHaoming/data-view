@@ -1,6 +1,6 @@
 <template>
   <el-row class="creation-main">
-    <div class="left-aside">
+    <div>
       <left></left>
     </div>
     <mind-map-index></mind-map-index>
@@ -38,7 +38,7 @@ export default {
       } else {
         this.$message.info('请新建/打开一个对话')
       }
-    }
+    },
   }
 }
 </script>
@@ -51,7 +51,18 @@ export default {
 }
 
 .left-aside {
-  flex: 0 0 300px;;
+  /*flex: 0 0 300px;*/
   height: 100%;
+  width: 300px;
+  transition-property: width;
+  /*transition-duration: 1s;*/
+  transition:all 0.28s ease-in 0.1s
+}
+.left-asides {
+  height: 100%;
+  width: 50px;
+  transition-property: width;
+  /*transition-duration: ;*/
+  transition:all 0.28s ease-in 0.1s
 }
 </style>

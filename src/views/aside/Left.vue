@@ -1,45 +1,48 @@
 <template>
-  <div class="left-aside">
-    <div class="sidebar collapsed-menu">
-      <div :class="'sidebar-button ' + (activeSidebarButton === 'explorer' ? 'selected' : '')">
-        <el-button type="text" @click="handleSidebarButton('explorer')">
-          <i class="el-icon-folder-opened sidebar-icon"></i></el-button>
-      </div>
+  <div class="main">
+    <div :class="hidePlay === false ? 'left-asides' : 'left-aside'">
+      <div class="sidebar collapsed-menu">
+        <div :class="'sidebar-button ' + (activeSidebarButton === 'explorer' ? 'selected' : '')">
+          <el-button type="text" @click="handleSidebarButton('explorer')">
+            <i class="el-icon-folder-opened sidebar-icon"></i></el-button>
+        </div>
 
-      <div :class="'sidebar-button ' + (activeSidebarButton === 'step' ? 'selected' : '')">
-        <el-button type="text" @click="handleSidebarButton('step')">
-          <i class="el-icon-s-operation sidebar-icon"></i></el-button>
+        <div :class="'sidebar-button ' + (activeSidebarButton === 'step' ? 'selected' : '')">
+          <el-button type="text" @click="handleSidebarButton('step')">
+            <i class="el-icon-s-operation sidebar-icon"></i></el-button>
+        </div>
       </div>
-    </div>
-    <div class="left-menu">
-      <div v-if="activeSidebarButton === 'step'">
-        <el-collapse v-model="activeStep" class="step-menu" accordion>
-          <el-collapse-item style="text-align: unset" v-for="(item, index) of stepData" :key="index" :name="index"
-                            :title="item.title">
-            <div v-html="item.context"></div>
-          </el-collapse-item>
-        </el-collapse>
-      </div>
-      <div v-if="activeSidebarButton === 'explorer'">
-        <el-input
-            placeholder="输入关键字进行过滤"
-            size="small"
-            class="explorer-search"
-            v-model="explorerSearch">
-        </el-input>
-        <el-tree
-            @node-click="handleExplorerChange"
-            ref="explorerTree"
-            :props="explorerTreeProps"
-            :load="explorerTreeLoadNode"
-            :check-on-click-node="true"
-            :highlight-current="true"
-            :default-checked-keys="explorerCurrentKey"
-            :data="explorerData"
-            lazy
-            node-key="id"
-            v-if="showExplorerTree"
-            class="explorer-tree">
+      <div class="left-menu">
+        <div v-if="hidePlay">
+          <div v-if="activeSidebarButton === 'step'">
+            <el-collapse v-model="activeStep" class="step-menu" accordion>
+              <el-collapse-item style="text-align: unset" v-for="(item, index) of stepData" :key="index" :name="index"
+                                :title="item.title">
+                <div v-html="item.context"></div>
+              </el-collapse-item>
+            </el-collapse>
+          </div>
+          <div v-if="activeSidebarButton === 'explorer'">
+            <el-input
+                placeholder="输入关键字进行过滤"
+                size="small"
+                class="explorer-search"
+                v-model="explorerSearch">
+            </el-input>
+            <el-tree
+                @node-click="handleExplorerChange"
+                ref="explorerTree"
+                :props="explorerTreeProps"
+                :load="explorerTreeLoadNode"
+                :check-on-click-node="true"
+                :highlight-current="true"
+                :default-checked-keys="explorerCurrentKey"
+                :default-expanded-keys="expandedList"
+                :data="explorerData"
+                lazy
+                node-key="id"
+                v-if="showExplorerTree"
+                class="explorer-tree">
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>
           <i class="iconfont icon-wenjianjia" v-if="!data.leaf"></i>
@@ -61,27 +64,32 @@
           </el-button>
         </span>
       </span>
-        </el-tree>
+            </el-tree>
+          </div>
+        </div>
+        <el-dialog :title="`新建对话 位置: ${newDialogue.parentPath}`" :visible.sync="dialogNewDialogueVisible" style="text-align: left">
+          <el-form @submit.native.prevent label-position="left" :rules="newDialogueRules" ref="newDialogueForm" label-width="80px" :model="newDialogue">
+            <el-form-item label="名称" prop="name">
+              <el-input @keyup.enter.native="handlerEnterNewDialogueForm" v-model="newDialogue.name" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="类型" prop="type">
+              <el-radio-group v-model="newDialogue.type">
+                <el-radio label="DIALOGUE">对话</el-radio>
+                <el-radio label="FOLDER">文件夹</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="handlerNewDialogueCancel">取 消</el-button>
+            <el-button type="primary" @click="handlerNewDialogueSubmit">确 定</el-button>
+          </div>
+        </el-dialog>
+        <div class="bottomTitle" v-if="hidePlay">Sibbay 互动创作平台</div>
       </div>
     </div>
-
-    <el-dialog :title="`新建对话 位置: ${newDialogue.parentPath}`" :visible.sync="dialogNewDialogueVisible" style="text-align: left">
-      <el-form @submit.native.prevent label-position="left" :rules="newDialogueRules" ref="newDialogueForm" label-width="80px" :model="newDialogue">
-        <el-form-item label="名称" prop="name">
-          <el-input @keyup.enter.native="handlerEnterNewDialogueForm" v-model="newDialogue.name" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="类型" prop="type">
-          <el-radio-group v-model="newDialogue.type">
-            <el-radio label="DIALOGUE">对话</el-radio>
-            <el-radio label="FOLDER">文件夹</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="handlerNewDialogueCancel">取 消</el-button>
-        <el-button type="primary" @click="handlerNewDialogueSubmit">确 定</el-button>
-      </div>
-    </el-dialog>
+    <div :class="hidePlay === false ? 'leftImgs' :  'leftImg' " >
+      <el-image  :src="leftImg"  @click="hideMenu" style="cursor: pointer"></el-image>
+    </div>
   </div>
 
 </template>
@@ -96,13 +104,16 @@ export default {
       this.handlerSetOwnerInfo(to)
       if (to.params.type === from.params.type) return
       this.resetExplorer()
-    }
+    },
   },
   mounted() {
     this.handlerSetOwnerInfo(this.$route)
   },
   data() {
     return {
+      hidePlay: true,
+      expandedList:[],
+      leftImg:require('@/assets/img/leftZoom.png'),
       ownerId: '',
       dialogNewDialogueVisible: false,
       newDialogue: {
@@ -209,9 +220,11 @@ export default {
     },
     handleSidebarButton(index) {
       this.activeSidebarButton = index
+      this.hidePlay = true
     },
     handleExplorerChange(node) {
       if (node.leaf === true) {
+        this.expandedList.push(node.id)
         let query = Object.assign({}, this.$route.query)
         query.id = node.id
         query._ = +new Date()
@@ -250,8 +263,11 @@ export default {
       }).finally(() => {
         resolve(nodes)
       })
-
     },
+    // 隐藏菜单栏
+    hideMenu() {
+      this.hidePlay = false
+    }
   }
 }
 </script>
@@ -259,8 +275,26 @@ export default {
 <style scoped>
 .left-aside {
   display: flex;
+  width: 300px;
+  height: 100%;
+  transition-property: width;
+  transition-duration: 1s;
+  transition:all 0.2s ease-in-out 0.2s
 }
-
+.left-asides {
+  height: 100%;
+  display: flex;
+  width: 45px;
+  transition-property: width;
+  /*transition-duration: ;*/
+  transition:all 0.2s ease-in 0.2s
+}
+.bottomTitle{
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+}
 .collapsed-menu {
   flex: 0 0 44px;
   width: 44px;
@@ -287,6 +321,7 @@ export default {
 .left-menu {
   flex: 1;
   background: #F8F8FA;
+  position: relative;
 }
 
 .step-menu {
@@ -321,5 +356,29 @@ export default {
   margin-left: 5px;
   margin-right: 5px;
 }
-
+.main {
+  display: flex;
+  position: relative;
+  height: 100%;
+  background-color: #f6f6f6;
+}
+.leftImg{
+  /*background-color: #f6f6f6;*/
+  position: absolute;
+  left: 300px;
+  z-index: 99;
+  width: 30px;
+  align-self:center;
+  transition-property: width;
+  /*transition-duration: ;*/
+  transition:all 0.2s ease-in 0.1s
+}
+.leftImgs{
+  /*background-color: #f6f6f6;*/
+  position: absolute;
+  left: 300px;
+  z-index: 99;
+  width: 0;
+  align-self:center;
+}
 </style>

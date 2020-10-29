@@ -192,7 +192,8 @@ export default {
         parentPath: '',
         content: '',
         history: []
-      }
+      },
+      willUpdateDialogueContent: undefined,
     }
   },
   mounted() {
@@ -226,25 +227,28 @@ export default {
         return
       }
       console.log('do update dialogue')
+
       getOneDialogue({id: this.dialogueId}).then((res) => {
-        const nowDialogue = res.data.getOneDialogue
-        if (nowDialogue.content !== old) {
+        const nowDialogueContent = this.willUpdateDialogueContent || res.data.getOneDialogue.content
+        if (nowDialogueContent !== old) {
           this.$confirm('检测到云端内容已经更新，是否强制覆盖？', '确认信息', {
             distinguishCancelAndClose: true,
             confirmButtonText: '强制覆盖',
             cancelButtonText: '拉取云端'
           }).then(() => {
+            this.willUpdateDialogueContent = val
             updateDialogueContent({id: this.dialogueId, dialogueContent: val}).then(() => {
               this.$message.success("强制覆盖成功")
             })
           }).catch((err) => {
             console.log(err)
             this.isCancelUpdateDialogue = true
-            this.dialogueContent = nowDialogue.content
+            this.dialogueContent = nowDialogueContent
             this.$message.success("拉取云端导图成功")
             this.init()
           })
         } else {
+          this.willUpdateDialogueContent = val
           updateDialogueContent({id: this.dialogueId, dialogueContent: val}).then(() => {
             this.$message.success("导图更新成功")
           })
@@ -512,7 +516,7 @@ export default {
       }
     },
     selectedNode(nodeObj) {
-      // this.dialogueContent = this.ME.getAllDataString() // 执行更新
+      this.dialogueContent = this.ME.getAllDataString() // 执行更新
       this.initPreviewTool(nodeObj)
 
       if (nodeObj.root) return

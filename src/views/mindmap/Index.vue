@@ -707,7 +707,7 @@ export default {
       }
     },
     codeToHtml(code) {
-      return code.replace(/\n/g, '<br>')
+      return code.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>')
     },
     htmlToCode(html) {
       return html.replace(/<br>/g, '\n').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')

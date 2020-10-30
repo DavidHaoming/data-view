@@ -4,6 +4,8 @@ import './plugins/element.js'
 import router from './router'
 import store from './store'
 import ElementUI from 'element-ui'
+import VueClipboard from 'vue-clipboard2'
+Vue.use(VueClipboard)
 // import 'element-ui/lib/theme-chalk/index.css'
 
 Vue.config.productionTip = false

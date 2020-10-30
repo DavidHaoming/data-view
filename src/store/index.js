@@ -34,6 +34,7 @@ export default new Vuex.Store({
       '#27ae61',
       '#2ecc71',
     ],
+    viewId: ''
   },
   mutations: {
     setToken (state, token) {
@@ -52,6 +53,9 @@ export default new Vuex.Store({
     },
     setOrganization (state, organization) {
       state.organization = organization
+    },
+    addViewId(state, viewId) {
+      state.viewId = viewId
     }
   },
   actions: {

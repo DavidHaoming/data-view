@@ -44,7 +44,7 @@
         </span>
        <div class="share">
          <span style="border-right: 1px dashed #cecdcd; opacity: 0.8">协作</span>
-         <span style="opacity: 0.8">分享</span>
+         <span style="opacity: 0.8" @click="disShare">分享</span>
        </div>
 <!--        <el-dropdown-menu slot="dropdown">-->
 <!--          <el-dropdown-item>个人信息</el-dropdown-item>-->
@@ -52,7 +52,13 @@
 <!--        </el-dropdown-menu>-->
 <!--      </el-dropdown>-->
     </div>
-
+    <div class="orCode" v-if="hideShare">
+      <div style="height: 150px">
+      <vue-qr  text="5f97db0c5d33c934f51e45c4" :whiteMargin="true" :size="150"></vue-qr>
+      </div>
+      <div class="orUrl">URL：5f97db0c5d33c934f51e45c4</div>
+      <el-button v-clipboard:copy="sysAppIds" v-clipboard:success="onCopy" v-clipboard:error="onError">复制URL</el-button>
+    </div>
     <!--新建桶-->
     <el-dialog title="新建桶" :visible.sync="dialogNewBucketVisible" style="text-align: left">
       <el-form @submit.native.prevent label-position="left" :rules="newBucketRules" ref="newBucketForm" label-width="80px" :model="newBucket">
@@ -147,18 +153,30 @@
 import {createBucket} from "@/api/graphql/bucket";
 import {createOrganization} from "@/api/graphql/user";
 import {createDialogue, getAllDialogue} from "@/api/graphql/dialogue";
-
+import vueQr from 'vue-qr'
 export default {
   name: 'Header',
+  components: {
+    vueQr
+  },
   watch: {
     $route(to) {
       if (to.params.type === 'organization' && to.params.id) this.defaultActiveMenu = to.params.id
       if (to.params.type === 'user') this.defaultActiveMenu = 'user'
     }
   },
+  computed:{
+    sysAppIds() {
+       return this.$store.state.viewId
+     }
+  },
+  created() {
+    console.log('sysApp', this.sysAppIds)
+  },
   data() {
     return {
       defaultActiveMenu: '',
+      hideShare: false,
       activeIndex: '个人空间',
       searchInput: '',
       folderCurrentKey: "",
@@ -387,7 +405,18 @@ export default {
       console.log('key', key)
       this.activeIndex = key
       console.log('keyPath', keyPath)
-    }
+    },
+    // 二维码
+    disShare() {
+      this.hideShare = !this.hideShare
+    },
+    onCopy(e) {
+      console.log(e)
+      this.$message.success('复制成功')
+    },
+    onError(){
+      alert("失败");
+    },
   }
 }
 </script>
@@ -476,9 +505,28 @@ export default {
   color: black;
   border-radius: 5px;
   font-size: 16px;
+  user-select:none;
   span{
       width: 70px;
   }
 }
+ .orCode{
+   position: absolute;
+   top: 60px;
+   z-index: 9999999;
+   right: 40px;
+   color: #ffffff;
+   width: 200px;
+   background-color: rgb(0,0,0,0.9);
+   height: 260px;
+   padding: 20px;
 
+ }
+.orUrl {
+  width: 180px;
+  margin-left: 25px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 </style>

@@ -56,7 +56,7 @@
       <div style="height: 150px">
       <vue-qr  :text="`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=test`" :whiteMargin="true" :size="150"></vue-qr>
       </div>
-      <div class="orUrl">{{`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=test`}}}</div>
+      <div class="orUrl">{{`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=test`}}</div>
       <el-button v-clipboard:copy="sysAppIds" v-clipboard:success="onCopy" v-clipboard:error="onError"  size="small">拷贝ViewId</el-button>
     </div>
     <!--新建桶-->

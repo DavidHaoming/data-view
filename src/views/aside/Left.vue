@@ -88,7 +88,7 @@
       </div>
     </div>
     <div :class="hidePlay === false ? 'leftImgs' :  'leftImg' " >
-      <el-image  :src="leftImg"  @click="hideMenu" style="cursor: pointer"></el-image>
+      <el-image  :src="leftImg"  @click="hideMenu" style="cursor: pointer"  height="35px" width="25px"></el-image>
     </div>
   </div>
 
@@ -367,11 +367,19 @@ export default {
   position: absolute;
   left: 300px;
   z-index: 99;
-  width: 30px;
+  width: 20px;
   align-self:center;
   transition-property: width;
   /*transition-duration: ;*/
-  transition:all 0.2s ease-in 0.1s
+  transition:all 0.2s ease-in 0.1s;
+  border: 1px solid #928f8f;
+  border-left: 0;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  display: flex;
+  align-items: center;
+  margin-right: -3px;
+  height: 40px;
 }
 .leftImgs{
   /*background-color: #f6f6f6;*/

@@ -56,8 +56,8 @@
       <div style="height: 150px">
       <vue-qr  :text="`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=test`" :whiteMargin="true" :size="150"></vue-qr>
       </div>
-      <div class="orUrl">URL：{{`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=test`}}}</div>
-      <el-button v-clipboard:copy="sysAppIds" v-clipboard:success="onCopy" v-clipboard:error="onError">复制</el-button>
+      <div class="orUrl">{{`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=test`}}}</div>
+      <el-button v-clipboard:copy="sysAppIds" v-clipboard:success="onCopy" v-clipboard:error="onError"  size="small">拷贝ViewId</el-button>
     </div>
     <!--新建桶-->
     <el-dialog title="新建桶" :visible.sync="dialogNewBucketVisible" style="text-align: left">
@@ -518,14 +518,16 @@ export default {
    color: #ffffff;
    width: 200px;
    background-color: rgb(0,0,0,0.9);
-   height: 260px;
+   //height: 260px;
    padding: 20px;
  }
 .orUrl {
   width: 180px;
-  margin-left: 25px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  margin-left: 15px;
+  line-height: 20px;
+  font-size: 12px;
+  word-wrap:break-word;
+  word-break:break-all;
+  margin-top: 20px;
 }
 </style>

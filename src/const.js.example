@@ -4,3 +4,4 @@ export const ALIYUN_OAUTH_CLIENT_ID = "xxx" // 随环境不同
 export const ALIYUN_OAUTH_REDIRECT_URI = "xxx" // 前端登录地址, 随环境不同
 export const ALIYUN_OAUTH_RESPONSE_TYPE = "code"
 export const ALIYUN_OAUTH_URL = `https://signin.aliyun.com/oauth2/v1/auth?client_id=${ALIYUN_OAUTH_CLIENT_ID}&redirect_uri=${ALIYUN_OAUTH_REDIRECT_URI}&response_type=${ALIYUN_OAUTH_RESPONSE_TYPE}&state=`
+export const RUN_ENV = "test"

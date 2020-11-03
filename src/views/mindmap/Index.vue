@@ -143,7 +143,7 @@
 import MindElixir, {E} from "@/plugins/mind-elixir"
 import Editor from 'vue2x-ace-editor'
 import {getOneDialogue, updateDialogueContent} from "@/api/graphql/dialogue";
-import {PREVIEW_TOOL_URL} from "@/const"
+import {PREVIEW_TOOL_URL, API_URL} from "@/const"
 
 export default {
   name: "MindMapIndex",
@@ -351,11 +351,18 @@ export default {
         toolBar: true,
         nodeMenu: false,
         keypress: true,
+        imageUploadURL: API_URL + '/api/image'
       })
       this.ME.init()
       this.ME.bus.addListener('operation', op => {
         this.dialogueContent = this.ME.getAllDataString() // 执行更新
         localStorage.setItem(`dialogue-${this.dialogueId}`, this.dialogueContent)
+        if (op.name === "imageUpload") {
+          console.log(op)
+        }
+        if (op.name === "delSelectImg") {
+          console.log(op)
+        }
         if (op.name === "finishEdit") {
           // update code
           if (this.ME.currentNode) {
@@ -733,7 +740,7 @@ export default {
       }
     },
     codeToHtml(code) {
-      return code.replace(/\n/g, '<br>')
+      return code.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>')
     },
     htmlToCode(html) {
       return html.replace(/<br>/g, '\n').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')

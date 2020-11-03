@@ -317,8 +317,8 @@ export default {
           this.dialogue = res.data.getOneDialogue
           this.dialogueContent = this.dialogue.content
           this.handlerInitMindMap()
-           console.log('dialogue', this.dialogue.id)
-          this.$store.commit('addViewId', this.dialogue.id)
+           console.log('dialogue', this.dialogue.viewId)
+          this.$store.commit('addViewId', this.dialogue.viewId)
         }).catch((err) => {
           console.log(err)
           this.$message.error('获取对话出错')
@@ -909,6 +909,7 @@ export default {
   height:100%;
   float: left;
   cursor: ew-resize;
+  opacity: 0;
 }
 .rightMod:after {
   clear: both;

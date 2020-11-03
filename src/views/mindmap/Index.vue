@@ -1,5 +1,5 @@
 <template>
-  <div class="center" ref="centerMindMap" v-if="showCenterMindMap">
+  <div class="center" ref="centerMindMap" v-show="showCenterMindMap">
     <div class="center-main">
       <div id="mindmap" ></div>
       <div v-if="textTarget" class="text-target"
@@ -20,10 +20,11 @@
         </el-select>
       </div>
     </div>
-    <div style="display: flex;background-color: #f6f6f6">
+    <div style="height: 100%;display: flex;background-color: #f6f6f6;user-select:none;position:absolute;right: 0" class="rightMod">
       <div class="rightZoom">
-        <el-image :src="rightImg" @click="hideZoom" width="30px"></el-image>
+        <el-image :src="rightImg" @click="hideZoom" height="35px" width="25px"></el-image>
       </div>
+      <div class="leftLine" ref="divider" draggable="true" v-show="leftLineHide"  @mousedown="mouseDown"></div>
       <div :class="isDisplay === false ? 'right-asides' : 'right-aside'"  ref="resize" class="resize" >
         <el-tabs style="height: 100%;border: none;" v-model="activeRightAside" type="border-card" :stretch="true"
                  @tab-click="handleClickRightAsideTab" v-if="hideTable">
@@ -133,7 +134,6 @@
           </el-tab-pane>
         </el-tabs>
       </div>
-
     </div>
 
   </div>
@@ -156,6 +156,10 @@ export default {
       isDisplay:true,
       hideTable:true,
       rightImg:require('@/assets/img/rightZoom.png'),
+      moveWidth: 300,
+      startPageX :0,
+      startAsideWidth: 0,
+      leftLineHide:true,
       ME: null,
       nodeAttribute: '',
       needUpdateAttributeData: {id: '', attribute: {}},
@@ -207,10 +211,33 @@ export default {
       willUpdateDialogueContent: undefined,
     }
   },
+  created() {
+
+  },
   mounted() {
     this.init()
     for (const n of [1, 2, 3, 4, 5]) {
       this.optionsTextTarget.push({label: '我是打招呼' + n, value: '我是打招呼' + n})
+    }
+    this.$refs.divider.ondragstart= e =>{
+      console.log('eeee', e)
+      this.startPageX = e.pageX;
+      this.startAsideWidth = this.moveWidth;
+    }
+    this.$refs.divider.ondrag= e => {
+      console.log('ssss', e)
+      if (e.pageX) {
+        console.log('stat', this.startPageX)
+        const offset =  this.startPageX - e.pageX ;
+        let width = this.startAsideWidth + offset;
+        if (width !== this.moveWidth) {
+          this.moveWidth = width;
+          if (width < 300) {
+            width = 300
+          }
+          this.$refs.resize.style.width = width + 'px';
+        }
+      }
     }
   },
   watch: {
@@ -733,6 +760,16 @@ export default {
     },
     hideZoom() {
       this.isDisplay = !this.isDisplay
+      if (this.isDisplay) {
+        this.$refs.resize.style.width = 300 + 'px'
+        this.$refs.resize.style.transition = 'all 0.3s ease-in 0.2s'
+        this.leftLineHide = true
+        
+      } else {
+        this.$refs.resize.style.width = 0 + 'px'
+        this.leftLineHide = false
+        this.$refs.resize.style.transition = 'all 0.3s ease-in 0.2s'
+      }
       setTimeout( ()=>{
         this.hideTable = !this.hideTable
       },400)
@@ -750,6 +787,9 @@ export default {
           if (this.$refs.attributeEditor) this.$refs.attributeEditor.setValue(this.nodeAttribute)
         }
       })
+    },
+    mouseDown() {
+      this.$refs.resize.style.transition =  'none'
     }
   }
 }
@@ -780,6 +820,7 @@ export default {
   width: calc(100% - 330px);
   height: 100%;
   display: flex;
+  /*overflow-x: hidden;*/
 }
 
 .center-main {
@@ -854,12 +895,30 @@ export default {
   padding: 0;
 }
 .rightZoom{
-  width: 30px;
   align-self:center;
   cursor: pointer;
+  height: 40px;
   background-color: #f6f6f6;
+  border: 1px solid #928f8f;
+  border-right: 0;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  display: flex;
+  align-items: center;
+  margin-right: -3px;
+  width: 20px;
 }
 .aside-template-group{
   width: 270px;
+}
+.leftLine {
+  width:5px;
+  height:100%;
+  float: left;
+  cursor: ew-resize;
+  opacity: 0;
+}
+.rightMod:after {
+  clear: both;
 }
 </style>

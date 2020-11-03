@@ -39,7 +39,7 @@ export default {
       } else {
         this.$message.info('请新建/打开一个对话')
       }
-    },
+    }
   }
 }
 </script>

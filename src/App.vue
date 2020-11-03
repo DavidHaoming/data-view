@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <template v-if="!$route.meta.isPublic">
-      <el-container>
-        <el-header><Header /></el-header>
+      <el-container @click.native.stop="hideCopy" @click="showShare">
+        <el-header><Header ref="hide" /></el-header>
         <el-main style="padding: 0;"><router-view /></el-main>
       </el-container>
     </template>
@@ -17,6 +17,20 @@
   export default {
     components: {
       Header
+    },
+    data() {
+      return {
+        hideCopay: 0
+      }
+    },
+    methods: {
+      //隐藏二维码
+      hideCopy() {
+        this.$refs.hide.hideShare = false
+      },
+      showShare() {
+        return
+      }
     }
   }
 

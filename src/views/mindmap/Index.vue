@@ -916,6 +916,7 @@ export default {
   height:100%;
   float: left;
   cursor: ew-resize;
+  opacity: 0;
 }
 .rightMod:after {
   clear: both;

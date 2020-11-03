@@ -153,6 +153,7 @@ export default {
   data() {
     return {
       isHide: 1,
+      meStatusButtonEL: null,
       isDisplay:true,
       hideTable:true,
       rightImg:require('@/assets/img/rightZoom.png'),
@@ -232,13 +233,18 @@ export default {
     }
   },
   methods: {
+    handlerMeStatusButton(loading=false) {
+      if (!this.meStatusButtonEL) return
+      if (loading === false) this.meStatusButtonEL.style.backgroundColor = '#36ab60'
+      if (loading === true) this.meStatusButtonEL.style.backgroundColor = '#E6A23C'
+    },
     handlerUpdateDialogueContent(val, old) {
       if (this.isCancelUpdateDialogue === true) {
         this.isCancelUpdateDialogue = false
         return
       }
       console.log('do update dialogue')
-
+      this.handlerMeStatusButton(true)
       getOneDialogue({id: this.dialogueId}).then((res) => {
         const nowDialogueContent = this.willUpdateDialogueContent || res.data.getOneDialogue.content
         if (nowDialogueContent !== old) {
@@ -266,6 +272,8 @@ export default {
         }
       }).catch(() => {
         this.$message.error('获取对话出错')
+      }).finally(() => {
+        this.handlerMeStatusButton(false)
       })
 
     },
@@ -374,6 +382,7 @@ export default {
       this.ME.bus.addListener('unselectNode', () => {
         this.unSelectedNode()
       })
+      this.meStatusButtonEL = this.ME.getStatusButton()
     },
     init(r=this.$route) {
       this.handlerGetDialogue(r)

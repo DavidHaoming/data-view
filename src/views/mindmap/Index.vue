@@ -1,5 +1,5 @@
 <template>
-  <div class="center" ref="centerMindMap" v-if="showCenterMindMap">
+  <div class="center" ref="centerMindMap" v-show="showCenterMindMap">
     <div class="center-main">
       <div id="mindmap" ></div>
       <div v-if="textTarget" class="text-target"
@@ -215,6 +215,10 @@ export default {
 
   },
   mounted() {
+    this.init()
+    for (const n of [1, 2, 3, 4, 5]) {
+      this.optionsTextTarget.push({label: '我是打招呼' + n, value: '我是打招呼' + n})
+    }
     this.$refs.divider.ondragstart= e =>{
       console.log('eeee', e)
       this.startPageX = e.pageX;
@@ -234,10 +238,6 @@ export default {
           this.$refs.resize.style.width = width + 'px';
         }
       }
-    }
-    this.init()
-    for (const n of [1, 2, 3, 4, 5]) {
-      this.optionsTextTarget.push({label: '我是打招呼' + n, value: '我是打招呼' + n})
     }
   },
   watch: {

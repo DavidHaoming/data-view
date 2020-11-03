@@ -44,7 +44,7 @@
         </span>
        <div class="share">
          <span style="border-right: 1px dashed #cecdcd; opacity: 0.8">协作</span>
-         <span style="opacity: 0.8" @click="disShare">分享</span>
+         <span style="opacity: 0.8" @click.stop="disShare">分享</span>
        </div>
 <!--        <el-dropdown-menu slot="dropdown">-->
 <!--          <el-dropdown-item>个人信息</el-dropdown-item>-->
@@ -52,12 +52,14 @@
 <!--        </el-dropdown-menu>-->
 <!--      </el-dropdown>-->
     </div>
+    <div @click.stop="showShare">
     <div class="orCode" v-if="hideShare">
       <div style="height: 150px">
       <vue-qr  :text="`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=test`" :whiteMargin="true" :size="150"></vue-qr>
       </div>
       <div class="orUrl">{{`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=test`}}</div>
       <el-button v-clipboard:copy="sysAppIds" v-clipboard:success="onCopy" v-clipboard:error="onError"  size="small">拷贝ViewId</el-button>
+      </div>
     </div>
     <!--新建桶-->
     <el-dialog title="新建桶" :visible.sync="dialogNewBucketVisible" style="text-align: left">
@@ -163,7 +165,7 @@ export default {
     $route(to) {
       if (to.params.type === 'organization' && to.params.id) this.defaultActiveMenu = to.params.id
       if (to.params.type === 'user') this.defaultActiveMenu = 'user'
-    }
+    },
   },
   computed:{
     sysAppIds() {
@@ -401,6 +403,9 @@ export default {
       //   })
       // }
     },
+    showShare() {
+      this.hideShare = true
+    },
     handleSelect(key,keyPath) {
       console.log('key', key)
       this.activeIndex = key
@@ -408,7 +413,7 @@ export default {
     },
     // 二维码
     disShare() {
-      this.hideShare = !this.hideShare
+      this.hideShare = true
     },
     onCopy(e) {
       console.log(e)

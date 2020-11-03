@@ -72,6 +72,7 @@ export let getOneDialogue = function (v) {
                 ownerType
                 recentlyAuthor
                 type
+                viewId
                 parentPath
                 content
             }

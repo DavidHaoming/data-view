@@ -24,8 +24,7 @@
       <div class="rightZoom">
         <el-image :src="rightImg" @click="hideZoom" width="30px"></el-image>
       </div>
-      <transition name="fade">
-      <div :class="isDisplay === false ? 'right-asides' : 'right-aside'" >
+      <div :class="isDisplay === false ? 'right-asides' : 'right-aside'"  ref="resize" class="resize" >
         <el-tabs style="height: 100%;border: none;" v-model="activeRightAside" type="border-card" :stretch="true"
                  @tab-click="handleClickRightAsideTab" v-if="hideTable">
           <el-tab-pane label="样式" name="style">
@@ -134,7 +133,6 @@
           </el-tab-pane>
         </el-tabs>
       </div>
-      </transition>
 
     </div>
 
@@ -292,7 +290,8 @@ export default {
           this.dialogue = res.data.getOneDialogue
           this.dialogueContent = this.dialogue.content
           this.handlerInitMindMap()
-          console.log(this.dialogue)
+           console.log('dialogue', this.dialogue.id)
+          this.$store.commit('addViewId', this.dialogue.id)
         }).catch((err) => {
           console.log(err)
           this.$message.error('获取对话出错')

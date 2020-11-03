@@ -20,6 +20,7 @@ export default {
   },
   data() {
     return {
+      viewId:""
     }
   },
   mounted() {
@@ -31,7 +32,7 @@ export default {
       if (this.id !== '') {
         getOneDialogue({id: this.id}).then((res) => {
           this.dialogue = res.data.getOneDialogue
-          console.log(this.dialogue)
+          // this.viewId = this.dialogue.viewId
         }).catch(() => {
           this.$message.error('获取对话出错')
         })

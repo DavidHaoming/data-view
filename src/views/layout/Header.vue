@@ -54,9 +54,9 @@
     </div>
     <div class="orCode" v-if="hideShare">
       <div style="height: 150px">
-      <vue-qr  :text="`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=test`" :whiteMargin="true" :size="150"></vue-qr>
+      <vue-qr  :text="`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=${mapLoad}`" :whiteMargin="true" :size="150"></vue-qr>
       </div>
-      <div class="orUrl">{{`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=test`}}}</div>
+      <div class="orUrl">{{`http://mritools.sibbay.ai/v2/?mapurl=${sysAppIds}&mapload=${mapLoad}`}}</div>
       <el-button v-clipboard:copy="sysAppIds" v-clipboard:success="onCopy" v-clipboard:error="onError"  size="small">拷贝ViewId</el-button>
     </div>
     <!--新建桶-->
@@ -154,6 +154,7 @@ import {createBucket} from "@/api/graphql/bucket";
 import {createOrganization} from "@/api/graphql/user";
 import {createDialogue, getAllDialogue} from "@/api/graphql/dialogue";
 import vueQr from 'vue-qr'
+import {RUN_ENV} from "@/const"
 export default {
   name: 'Header',
   components: {
@@ -176,6 +177,7 @@ export default {
   data() {
     return {
       defaultActiveMenu: '',
+      mapLoad: RUN_ENV,
       hideShare: false,
       activeIndex: '个人空间',
       searchInput: '',

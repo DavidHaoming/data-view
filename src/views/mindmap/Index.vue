@@ -20,8 +20,8 @@
         </el-select>
       </div>
     </div>
-    <div style="height: 100%;display: flex;background-color: #f6f6f6;user-select:none;position:absolute;right: 0" class="rightMod">
-      <div class="rightZoom">
+    <div style="height: 100%;display: flex;user-select:none;position:absolute;right: 0" class="rightMod">
+      <div :class="leftLineHide === false ? 'rightZooms' : 'rightZoom' ">
         <el-image :src="rightImg" @click="hideZoom" height="35px" width="25px"></el-image>
       </div>
       <div class="leftLine" ref="divider" draggable="true" v-show="leftLineHide"  @mousedown="mouseDown"></div>
@@ -221,20 +221,19 @@ export default {
       this.optionsTextTarget.push({label: '我是打招呼' + n, value: '我是打招呼' + n})
     }
     this.$refs.divider.ondragstart= e =>{
-      console.log('eeee', e)
       this.startPageX = e.pageX;
       this.startAsideWidth = this.moveWidth;
     }
     this.$refs.divider.ondrag= e => {
-      console.log('ssss', e)
       if (e.pageX) {
-        console.log('stat', this.startPageX)
         const offset =  this.startPageX - e.pageX ;
         let width = this.startAsideWidth + offset;
         if (width !== this.moveWidth) {
           this.moveWidth = width;
           if (width < 300) {
             width = 300
+          } else if (width > 600) {
+            width = 600 
           }
           this.$refs.resize.style.width = width + 'px';
         }
@@ -765,7 +764,7 @@ export default {
     // 隐藏菜单栏
     hideMenu() {
       this.$emit('hideMenu', this.isHide++,)
-      this.isDisplay = false
+        this.isDisplay = false
     },
     hideZoom() {
       this.isDisplay = !this.isDisplay
@@ -773,10 +772,11 @@ export default {
         this.$refs.resize.style.width = 300 + 'px'
         this.$refs.resize.style.transition = 'all 0.3s ease-in 0.2s'
         this.leftLineHide = true
-        
       } else {
         this.$refs.resize.style.width = 0 + 'px'
-        this.leftLineHide = false
+        setTimeout(() =>{
+          this.leftLineHide = false
+        },500)
         this.$refs.resize.style.transition = 'all 0.3s ease-in 0.2s'
       }
       setTimeout( ()=>{
@@ -829,7 +829,7 @@ export default {
   width: calc(100% - 330px);
   height: 100%;
   display: flex;
-  /*overflow-x: hidden;*/
+  overflow-x: hidden;
 }
 
 .center-main {
@@ -842,7 +842,7 @@ export default {
   width: 300px;
   text-align: start;
   transition-property: width;
-  transition:all 0.3s ease-in 0.2s;
+  transition:all 0.2s ease-in 0.1s;
   position: relative;
   /*display: flex;*/
 }
@@ -850,8 +850,8 @@ export default {
   width: 0;
   text-align: start;
   transition-property: width;
-  transition:all 0.3s ease-in 0.2s;
-  position: relative;
+  transition:all 0.2s ease-in 0.1s;
+  /*position: relative;*/
   /*display: flex;*/
 }
 .right-aside >>> .el-tabs__content {
@@ -859,9 +859,18 @@ export default {
   height: calc(100% - 40px);
 }
 
+.right-asides >>> .el-tab-pane {
+  height: 100%;
+}
+.right-asides >>> .el-tabs__content {
+  padding: 0;
+  height: calc(100% - 40px);
+}
+
 .right-aside >>> .el-tab-pane {
   height: 100%;
 }
+
 
 .aside-form-inline {
   width: auto;
@@ -917,6 +926,20 @@ export default {
   margin-right: -3px;
   width: 20px;
 }
+.rightZooms{
+  align-self:center;
+  cursor: pointer;
+  height: 40px;
+  background-color: #f6f6f6;
+  border: 1px solid #928f8f;
+  border-right: 0;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  display: flex;
+  align-items: center;
+  /*margin-right: -3px;*/
+  width: 20px;
+}
 .aside-template-group{
   width: 270px;
 }
@@ -924,7 +947,7 @@ export default {
   width:5px;
   height:100%;
   float: left;
-  cursor: ew-resize;
+  cursor: w-resize;
   opacity: 0;
 }
 .rightMod:after {

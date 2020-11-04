@@ -242,6 +242,10 @@ export default {
         return resolve([{ name: '根目录', value: 'root' }]);
       }
       let nodes = []
+      if (node.data.leaf) {
+        resolve(nodes)
+        return
+      }
       getAllDialogue({
         ownerType: this.newDialogue.ownerType,
         parentPath: node.data.value,
@@ -259,7 +263,7 @@ export default {
             console.log(nodes)
           }
       ).catch(() => {
-        this.$message.info('目录/文件为空, 请新建!')
+        if (!node.data.leaf) this.$message.info('目录/文件为空, 请新建!')
       }).finally(() => {
         resolve(nodes)
       })
